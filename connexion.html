@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Connexion administrateur</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<main class="connexion">
+
+    <div class="boite-connexion">
+
+        <h1>🔐 Administration</h1>
+
+        <p>
+            Connecte-toi pour accéder à ta boutique.
+        </p>
+
+        <form action="/login" method="POST">
+
+            <label for="password">
+                Mot de passe
+            </label>
+
+            <input
+                type="password"
+                id="password"
+                name="password"
+                placeholder="Ton mot de passe"
+                required
+            >
+
+            <button type="submit">
+                Se connecter
+            </button>
+
+        </form>
+
+        <p id="message-erreur"></p>
+
+        <a href="index.html">
+            ← Retour à la boutique
+        </a>
+
+    </div>
+
+</main>
+
+
+<script>
+
+    const params =
+        new URLSearchParams(
+            window.location.search
+        );
+
+
+    if (params.get("erreur") === "1") {
+
+        document.getElementById(
+            "message-erreur"
+        ).textContent =
+            "Mot de passe incorrect.";
+
+    }
+
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title id="titre-page">
+        Origami Bijoux
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="style.css"
+    >
+
+</head>
+
+<body>
+
+
+    <!-- ========================= -->
+    <!-- MENU -->
+    <!-- ========================= -->
+
+    <header>
+
+        <div
+            class="logo"
+            id="nom-site"
+        >
+            GAMEONE
+        </div>
+
+
+        <nav>
+
+            <a href="#accueil">
+                Accueil
+            </a>
+
+            <a href="#boutique">
+                Boutique
+            </a>
+
+            <a href="#contact">
+                Contact
+            </a>
+
+
+            <button
+                class="panier-btn"
+                onclick="ouvrirPanier()"
+            >
+
+                🛒 Panier
+                (
+                <span
+                    id="nombre-panier"
+                >
+                    0
+                </span>
+                )
+
+            </button>
+
+        </nav>
+
+    </header>
+
+
+    <!-- ========================= -->
+    <!-- ACCUEIL -->
+    <!-- ========================= -->
+
+    <section
+        id="accueil"
+        class="hero"
+    >
+
+        <div>
+
+            <h1 id="titre-accueil">
+
+                Des habits et bijoux
+                <br>
+                fait main et sans déchets
+
+            </h1>
+
+
+            <p id="texte-accueil">
+
+                Découvrez nos boucles d'oreilles
+                réalisées en origami.
+
+            </p>
+
+
+            <a
+                href="#boutique"
+                class="bouton"
+            >
+
+                Découvrir la collection
+
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- BOUTIQUE -->
+    <!-- ========================= -->
+
+    <section
+        id="boutique"
+        class="boutique"
+    >
+
+        <h2>
+
+            Notre collection
+
+        </h2>
+
+
+        <p class="sous-titre">
+
+            Des créations originales en origami
+
+        </p>
+
+
+        <div
+            class="produits"
+            id="liste-boutique"
+        >
+            <!-- Produits ajoutés automatiquement -->
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- CONTACT -->
+    <!-- ========================= -->
+
+    <section
+        id="contact"
+        class="contact"
+    >
+
+        <h2>
+
+            Contact
+
+        </h2>
+
+
+        <p>
+
+            Une question sur nos créations ?
+
+        </p>
+
+
+        <p>
+
+            lacreation@email.fr
+
+        </p>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- PANIER -->
+    <!-- ========================= -->
+
+    <div
+        id="fond-panier"
+        class="fond-panier"
+        onclick="fermerPanier()"
+    >
+
+        <div
+            class="panier"
+            onclick="event.stopPropagation()"
+        >
+
+
+            <button
+                class="fermer"
+                onclick="fermerPanier()"
+            >
+
+                ✕
+
+            </button>
+
+
+            <h2>
+
+                Mon panier 🛒
+
+            </h2>
+
+
+            <div
+                id="contenu-panier"
+            >
+            </div>
+
+
+            <div class="total">
+
+                Total :
+
+                <span
+                    id="total"
+                >
+                    0.00
+                </span>
+
+                €
+
+            </div>
+
+
+            <button
+                class="commander"
+                onclick="commander()"
+            >
+
+                Passer commande
+
+            </button>
+
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- FOOTER -->
+    <!-- ========================= -->
+
+    <footer>
+
+        <p>
+
+            © 2026
+
+            <span id="nom-site-footer">
+                Plika
+            </span>
+
+        </p>
+
+    </footer>
+
+
+    <!-- ========================= -->
+    <!-- JAVASCRIPT BOUTIQUE -->
+    <!-- ========================= -->
+
+    <script src="script.js"></script>
+
+
+    <!-- ========================= -->
+    <!-- RÉGLAGES DEPUIS L'ADMIN -->
+    <!-- ========================= -->
+
+    <script>
+
+        async function chargerReglagesSite() {
+
+            try {
+
+                const reponse =
+                    await fetch(
+                        "/api/site-settings",
+                        {
+                            cache:
+                                "no-store"
+                        }
+                    );
+
+
+                if (!reponse.ok) {
+
+                    console.error(
+                        "❌ Impossible de récupérer les réglages du site."
+                    );
+
+                    return;
+
+                }
+
+
+                const reglages =
+                    await reponse.json();
+
+
+                // =========================
+                // NOM DU SITE
+                // =========================
+
+                const nomSite =
+                    reglages.nomSite ||
+                    "Origami Bijoux";
+
+
+                const logo =
+                    document.getElementById(
+                        "nom-site"
+                    );
+
+
+                const footer =
+                    document.getElementById(
+                        "nom-site-footer"
+                    );
+
+
+                const titrePage =
+                    document.getElementById(
+                        "titre-page"
+                    );
+
+
+                if (logo) {
+
+                    logo.textContent =
+                        nomSite;
+
+                }
+
+
+                if (footer) {
+
+                    footer.textContent =
+                        nomSite;
+
+                }
+
+
+                if (titrePage) {
+
+                    titrePage.textContent =
+                        nomSite;
+
+                }
+
+
+                // =========================
+                // TITRE ACCUEIL
+                // =========================
+
+                const titreAccueil =
+                    document.getElementById(
+                        "titre-accueil"
+                    );
+
+
+                if (
+                    titreAccueil &&
+                    reglages.titreAccueil
+                ) {
+
+                    titreAccueil.innerHTML =
+                        echapperHTML(
+                            reglages.titreAccueil
+                        )
+                        .replace(
+                            /\n/g,
+                            "<br>"
+                        );
+
+                }
+
+
+                // =========================
+                // TEXTE ACCUEIL
+                // =========================
+
+                const texteAccueil =
+                    document.getElementById(
+                        "texte-accueil"
+                    );
+
+
+                if (
+                    texteAccueil &&
+                    reglages.texteAccueil
+                ) {
+
+                    texteAccueil.textContent =
+                        reglages.texteAccueil;
+
+                }
+
+
+            } catch (erreur) {
+
+                console.error(
+                    "❌ Erreur réglages site :",
+                    erreur
+                );
+
+            }
+
+        }
+
+
+        function echapperHTML(texte) {
+
+            return String(
+                texte ?? ""
+            )
+                .replace(
+                    /&/g,
+                    "&amp;"
+                )
+                .replace(
+                    /</g,
+                    "&lt;"
+                )
+                .replace(
+                    />/g,
+                    "&gt;"
+                )
+                .replace(
+                    /"/g,
+                    "&quot;"
+                )
+                .replace(
+                    /'/g,
+                    "&#039;"
+                );
+
+        }
+
+
+        document.addEventListener(
+            "DOMContentLoaded",
+            chargerReglagesSite
+        );
+
+    </script>
+
+
+</body>
+
+</html>

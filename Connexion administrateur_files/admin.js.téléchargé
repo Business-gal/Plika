@@ -1,0 +1,1023 @@
+// ======================================
+// PRODUITS
+// ======================================
+
+let produits = [];
+
+
+// ======================================
+// PERSONNALISATION
+// ======================================
+
+let personnalisation =
+    JSON.parse(
+        localStorage.getItem("personnalisation")
+    );
+
+if (!personnalisation) {
+
+    personnalisation = {
+        nomSite: "Origami Bijoux",
+
+        titreAccueil:
+            "Des bijoux pliés avec passion",
+
+        texteAccueil:
+            "Découvrez nos boucles d'oreilles réalisées en origami."
+    };
+
+    localStorage.setItem(
+        "personnalisation",
+        JSON.stringify(personnalisation)
+    );
+}
+
+
+// ======================================
+// CHARGER LES PRODUITS DU SERVEUR
+// ======================================
+
+async function chargerProduits() {
+
+    try {
+
+        const reponse =
+            await fetch("/api/products");
+
+        if (!reponse.ok) {
+            throw new Error(
+                "Impossible de charger les produits."
+            );
+        }
+
+        produits =
+            await reponse.json();
+
+        if (!Array.isArray(produits)) {
+            produits = [];
+        }
+
+        afficherProduits();
+
+        console.log(
+            "✅ Produits chargés depuis le serveur."
+        );
+
+    } catch (erreur) {
+
+        console.error(
+            "❌ Erreur de chargement :",
+            erreur
+        );
+
+        alert(
+            "Impossible de charger les produits depuis le serveur."
+        );
+    }
+}
+
+
+// ======================================
+// SAUVEGARDER LES PRODUITS SUR LE SERVEUR
+// ======================================
+
+async function sauvegarderProduits() {
+
+    try {
+
+        const reponse =
+            await fetch(
+                "/api/admin/sync-products",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+                        produits: produits
+                    })
+                }
+            );
+
+        const resultat =
+            await reponse.json();
+
+        if (!reponse.ok) {
+
+            throw new Error(
+                resultat.erreur ||
+                "Erreur de sauvegarde."
+            );
+        }
+
+        console.log(
+            "✅ Produits enregistrés sur le serveur."
+        );
+
+        return true;
+
+    } catch (erreur) {
+
+        console.error(
+            "❌ Erreur de sauvegarde :",
+            erreur
+        );
+
+        alert(
+            "Impossible d'enregistrer les produits."
+        );
+
+        return false;
+    }
+}
+
+
+// ======================================
+// AFFICHER LES PRODUITS
+// ======================================
+
+function afficherProduits() {
+
+    const liste =
+        document.getElementById(
+            "liste-produits"
+        );
+
+    if (!liste) {
+        return;
+    }
+
+    liste.innerHTML = "";
+
+
+    if (produits.length === 0) {
+
+        liste.innerHTML = `
+            <p>
+                Aucun produit disponible.
+            </p>
+        `;
+
+        return;
+    }
+
+
+    produits.forEach(
+        (produit, index) => {
+
+            let photosHTML =
+                "<p>Aucune photo</p>";
+
+
+            if (
+                Array.isArray(produit.images) &&
+                produit.images.length > 0
+            ) {
+
+                photosHTML =
+                    produit.images
+                        .map(
+                            (image, photoIndex) => `
+
+                                <div class="admin-photo">
+
+                                    <img
+                                        src="${image}"
+                                        alt="${escapeHTML(
+                                            produit.nom
+                                        )}"
+                                    >
+
+                                    <button
+                                        onclick="supprimerPhoto(
+                                            ${index},
+                                            ${photoIndex}
+                                        )"
+                                    >
+                                        ✕
+                                    </button>
+
+                                </div>
+
+                            `
+                        )
+                        .join("");
+            }
+
+
+            liste.innerHTML += `
+
+                <div class="admin-produit">
+
+                    <h2>
+                        ${escapeHTML(
+                            produit.nom
+                        )}
+                    </h2>
+
+                    <div class="admin-photos">
+                        ${photosHTML}
+                    </div>
+
+                    <button
+                        onclick="ajouterPhoto(${index})"
+                    >
+                        📷 Ajouter une photo
+                    </button>
+
+                    <br><br>
+
+                    <label>
+                        Nom :
+                        <input
+                            type="text"
+                            value="${escapeHTML(
+                                produit.nom
+                            )}"
+                            onchange="modifierNom(
+                                ${index},
+                                this.value
+                            )"
+                        >
+                    </label>
+
+                    <br><br>
+
+                    <label>
+                        Description :
+                        <textarea
+                            onchange="modifierDescription(
+                                ${index},
+                                this.value
+                            )"
+                        >${escapeHTML(
+                            produit.description || ""
+                        )}</textarea>
+                    </label>
+
+                    <br><br>
+
+                    <label>
+                        Prix :
+                        <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value="${Number(
+                                produit.prix
+                            )}"
+                            onchange="modifierPrix(
+                                ${index},
+                                this.value
+                            )"
+                        >
+                        €
+                    </label>
+
+                    <br><br>
+
+                    <label>
+                        Stock :
+                        <input
+                            type="number"
+                            min="0"
+                            value="${Number(
+                                produit.stock
+                            )}"
+                            onchange="modifierStock(
+                                ${index},
+                                this.value
+                            )}"
+                        >
+                    </label>
+
+                    <br><br>
+
+                    <button
+                        onclick="supprimerProduit(${index})"
+                    >
+                        🗑️ Supprimer le produit
+                    </button>
+
+                </div>
+
+                <hr>
+            `;
+        }
+    );
+}
+
+
+// ======================================
+// MODIFIER NOM
+// ======================================
+
+async function modifierNom(
+    index,
+    valeur
+) {
+
+    valeur =
+        valeur.trim();
+
+    if (!valeur) {
+
+        alert(
+            "Le nom ne peut pas être vide."
+        );
+
+        afficherProduits();
+        return;
+    }
+
+    produits[index].nom =
+        valeur;
+
+    await sauvegarderProduits();
+
+    afficherProduits();
+}
+
+
+// ======================================
+// MODIFIER DESCRIPTION
+// ======================================
+
+async function modifierDescription(
+    index,
+    valeur
+) {
+
+    produits[index].description =
+        valeur.trim();
+
+    await sauvegarderProduits();
+}
+
+
+// ======================================
+// MODIFIER PRIX
+// ======================================
+
+async function modifierPrix(
+    index,
+    valeur
+) {
+
+    const prix =
+        Number(valeur);
+
+    if (
+        !Number.isFinite(prix) ||
+        prix < 0
+    ) {
+
+        alert(
+            "Prix invalide."
+        );
+
+        afficherProduits();
+        return;
+    }
+
+    produits[index].prix =
+        prix;
+
+    await sauvegarderProduits();
+}
+
+
+// ======================================
+// MODIFIER STOCK
+// ======================================
+
+async function modifierStock(
+    index,
+    valeur
+) {
+
+    const stock =
+        Number(valeur);
+
+    if (
+        !Number.isInteger(stock) ||
+        stock < 0
+    ) {
+
+        alert(
+            "Stock invalide."
+        );
+
+        afficherProduits();
+        return;
+    }
+
+    produits[index].stock =
+        stock;
+
+    await sauvegarderProduits();
+}
+
+
+// ======================================
+// AJOUTER PLUSIEURS PHOTOS
+// ======================================
+
+function ajouterPhoto(index) {
+
+    const input =
+        document.createElement("input");
+
+    input.type = "file";
+
+    input.accept = "image/*";
+
+    // Permet de sélectionner plusieurs photos
+    input.multiple = true;
+
+
+    input.onchange =
+        async function(event) {
+
+            const fichiers =
+                Array.from(
+                    event.target.files || []
+                );
+
+
+            if (
+                fichiers.length === 0
+            ) {
+
+                return;
+
+            }
+
+
+            if (
+                !Array.isArray(
+                    produits[index].images
+                )
+            ) {
+
+                produits[index].images =
+                    [];
+
+            }
+
+
+            for (
+                const fichier
+                of fichiers
+            ) {
+
+                if (
+                    !fichier.type.startsWith(
+                        "image/"
+                    )
+                ) {
+
+                    continue;
+
+                }
+
+
+                await new Promise(
+                    (resolve) => {
+
+                        const lecteur =
+                            new FileReader();
+
+
+                        lecteur.onload =
+                            function(e) {
+
+                                produits[index]
+                                    .images
+                                    .push(
+                                        e.target.result
+                                    );
+
+                                resolve();
+
+                            };
+
+
+                        lecteur.onerror =
+                            function() {
+
+                                resolve();
+
+                            };
+
+
+                        lecteur.readAsDataURL(
+                            fichier
+                        );
+
+                    }
+                );
+
+            }
+
+
+            // Sauvegarder toutes les photos
+            await sauvegarderProduits();
+
+
+            // Actualiser l'affichage
+            afficherProduits();
+
+        };
+
+
+    input.click();
+
+}
+
+
+// ======================================
+// SUPPRIMER PHOTO
+// ======================================
+
+async function supprimerPhoto(
+    produitIndex,
+    photoIndex
+) {
+
+    if (
+        !confirm(
+            "Supprimer cette photo ?"
+        )
+    ) {
+
+        return;
+    }
+
+
+    produits[
+        produitIndex
+    ].images.splice(
+        photoIndex,
+        1
+    );
+
+
+    await sauvegarderProduits();
+
+    afficherProduits();
+}
+
+
+// ======================================
+// AJOUTER PRODUIT
+// ======================================
+
+async function ajouterProduit() {
+
+    const nom =
+        prompt(
+            "Nom du produit :"
+        );
+
+    if (!nom) {
+        return;
+    }
+
+
+    const description =
+        prompt(
+            "Description du produit :"
+        );
+
+    if (!description) {
+        return;
+    }
+
+
+    const prix =
+        Number(
+            prompt(
+                "Prix du produit :"
+            )
+        );
+
+    if (
+        !Number.isFinite(prix) ||
+        prix < 0
+    ) {
+
+        alert(
+            "Prix invalide."
+        );
+
+        return;
+    }
+
+
+    const stock =
+        Number(
+            prompt(
+                "Stock disponible :"
+            )
+        );
+
+    if (
+        !Number.isInteger(stock) ||
+        stock < 0
+    ) {
+
+        alert(
+            "Stock invalide."
+        );
+
+        return;
+    }
+
+
+    const id =
+        creerId(nom);
+
+
+    produits.push({
+
+        id: id,
+
+        nom:
+            nom.trim(),
+
+        description:
+            description.trim(),
+
+        prix: prix,
+
+        stock: stock,
+
+        images: []
+
+    });
+
+
+    await sauvegarderProduits();
+
+    afficherProduits();
+}
+
+
+// ======================================
+// SUPPRIMER PRODUIT
+// ======================================
+
+async function supprimerProduit(index) {
+
+    if (
+        !confirm(
+            "Supprimer ce produit ?"
+        )
+    ) {
+
+        return;
+    }
+
+
+    produits.splice(
+        index,
+        1
+    );
+
+
+    await sauvegarderProduits();
+
+    afficherProduits();
+}
+
+
+// ======================================
+// PERSONNALISATION
+// ======================================
+
+function afficherPersonnalisation() {
+
+    const nomSite =
+        document.getElementById(
+            "nom-site"
+        );
+
+    const titre =
+        document.getElementById(
+            "titre-accueil"
+        );
+
+    const texte =
+        document.getElementById(
+            "texte-accueil"
+        );
+
+
+    if (nomSite) {
+
+        nomSite.value =
+            personnalisation.nomSite;
+
+    }
+
+    if (titre) {
+
+        titre.value =
+            personnalisation.titreAccueil;
+
+    }
+
+    if (texte) {
+
+        texte.value =
+            personnalisation.texteAccueil;
+
+    }
+}
+
+
+function sauvegarderPersonnalisation() {
+
+    const nomSite =
+        document.getElementById(
+            "nom-site"
+        );
+
+    const titre =
+        document.getElementById(
+            "titre-accueil"
+        );
+
+    const texte =
+        document.getElementById(
+            "texte-accueil"
+        );
+
+
+    personnalisation.nomSite =
+        nomSite.value.trim();
+
+    personnalisation.titreAccueil =
+        titre.value.trim();
+
+    personnalisation.texteAccueil =
+        texte.value.trim();
+
+
+    localStorage.setItem(
+        "personnalisation",
+        JSON.stringify(
+            personnalisation
+        )
+    );
+
+
+    alert(
+        "✅ Personnalisation enregistrée !"
+    );
+}
+
+
+// ======================================
+// LIVRAISON
+// ======================================
+
+async function chargerLivraison() {
+
+    try {
+
+        const reponse =
+            await fetch(
+                "/api/admin/settings"
+            );
+
+
+        if (!reponse.ok) {
+            throw new Error(
+                "Impossible de charger les réglages."
+            );
+        }
+
+
+        const reglages =
+            await reponse.json();
+
+
+        const relais =
+            document.getElementById(
+                "prix-point-relais"
+            );
+
+        const domicile =
+            document.getElementById(
+                "prix-domicile"
+            );
+
+
+        if (relais) {
+
+            relais.value =
+                reglages.prixPointRelais ?? 3;
+
+        }
+
+
+        if (domicile) {
+
+            domicile.value =
+                reglages.prixDomicile ?? 5;
+
+        }
+
+    } catch (erreur) {
+
+        console.error(
+            erreur
+        );
+
+    }
+}
+
+
+async function sauvegarderLivraison() {
+
+    const relais =
+        Number(
+            document.getElementById(
+                "prix-point-relais"
+            ).value
+        );
+
+
+    const domicile =
+        Number(
+            document.getElementById(
+                "prix-domicile"
+            ).value
+        );
+
+
+    if (
+        !Number.isFinite(relais) ||
+        relais < 0
+    ) {
+
+        alert(
+            "Prix point relais invalide."
+        );
+
+        return;
+    }
+
+
+    if (
+        !Number.isFinite(domicile) ||
+        domicile < 0
+    ) {
+
+        alert(
+            "Prix domicile invalide."
+        );
+
+        return;
+    }
+
+
+    try {
+
+        const reponse =
+            await fetch(
+                "/api/admin/settings",
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body: JSON.stringify({
+
+                        prixPointRelais:
+                            relais,
+
+                        prixDomicile:
+                            domicile
+
+                    })
+                }
+            );
+
+
+        const resultat =
+            await reponse.json();
+
+
+        if (!reponse.ok) {
+
+            throw new Error(
+                resultat.erreur ||
+                "Erreur."
+            );
+        }
+
+
+        alert(
+            "✅ Tarifs de livraison enregistrés !"
+        );
+
+    } catch (erreur) {
+
+        console.error(
+            erreur
+        );
+
+        alert(
+            "Impossible d'enregistrer les tarifs."
+        );
+    }
+}
+
+
+// ======================================
+// ID PRODUIT
+// ======================================
+
+function creerId(
+    nom,
+    index = 0
+) {
+
+    const base =
+        String(nom)
+            .toLowerCase()
+            .normalize("NFD")
+            .replace(
+                /[\u0300-\u036f]/g,
+                ""
+            )
+            .replace(
+                /[^a-z0-9]+/g,
+                "-"
+            )
+            .replace(
+                /^-|-$/g,
+                ""
+            );
+
+
+    return (
+        base +
+        "-" +
+        Date.now() +
+        "-" +
+        index
+    );
+}
+
+
+// ======================================
+// PROTECTION HTML
+// ======================================
+
+function escapeHTML(
+    texte
+) {
+
+    return String(texte)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+
+// ======================================
+// DÉMARRAGE
+// ======================================
+
+afficherPersonnalisation();
+
+chargerProduits();
+
+chargerLivraison();

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Produit - Origami Bijoux</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+
+    <div class="logo"></div>
+
+    <nav>
+        <a href="index.html">Accueil</a>
+        <a href="index.html#boutique">Boutique</a>
+
+        <button class="panier-btn" onclick="ouvrirPanier()">
+            🛒 Panier (<span id="nombre-panier">0</span>)
+        </button>
+    </nav>
+
+</header>
+
+
+<main class="page-produit">
+
+    <a href="index.html#boutique" class="retour">
+        ← Retour à la boutique
+    </a>
+
+    <div id="detail-produit">
+        <!-- Produit chargé automatiquement -->
+    </div>
+
+</main>
+
+
+<!-- PANIER -->
+
+<div
+    id="fond-panier"
+    class="fond-panier"
+    onclick="fermerPanier()"
+>
+
+    <div
+        class="panier"
+        onclick="event.stopPropagation()"
+    >
+
+        <button
+            class="fermer"
+            onclick="fermerPanier()"
+        >
+            ✕
+        </button>
+
+        <h2>Mon panier 🛒</h2>
+
+        <div id="contenu-panier"></div>
+
+        <div class="total">
+
+            Total :
+            <span id="total">0.00</span> €
+
+        </div>
+
+        <button
+            class="commander"
+            onclick="commander()"
+        >
+            Passer commande
+        </button>
+
+    </div>
+
+</div>
+
+
+<script src="script.js"></script>
+
+</body>
+
+</html>

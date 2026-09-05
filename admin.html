@@ -1,0 +1,2524 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Administration - Origami Bijoux
+    </title>
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background:
+                #f6f6f6;
+
+            color:
+                #171717;
+        }
+
+        header {
+            min-height:
+                72px;
+
+            background:
+                #fff;
+
+            border-bottom:
+                1px solid #e8e8e8;
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                space-between;
+
+            gap:
+                20px;
+
+            padding:
+                0 6%;
+
+            position:
+                sticky;
+
+            top:
+                0;
+
+            z-index:
+                100;
+        }
+
+        .logo {
+            font-size:
+                20px;
+
+            font-weight:
+                700;
+        }
+
+        nav {
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            gap:
+                20px;
+        }
+
+        nav a {
+            color:
+                #555;
+
+            text-decoration:
+                none;
+
+            font-size:
+                14px;
+        }
+
+        .deconnexion {
+            color:
+                #b42318 !important;
+        }
+
+        .page {
+            max-width:
+                1150px;
+
+            margin:
+                45px auto;
+
+            padding:
+                0 20px 70px;
+        }
+
+        .titre {
+            margin-bottom:
+                30px;
+        }
+
+        .titre h1 {
+            margin:
+                0 0 8px;
+
+            font-size:
+                34px;
+
+            letter-spacing:
+                -1px;
+        }
+
+        .titre p {
+            margin:
+                0;
+
+            color:
+                #777;
+
+            font-size:
+                15px;
+        }
+
+        .admin-section {
+            background:
+                #fff;
+
+            border:
+                1px solid #e5e5e5;
+
+            border-radius:
+                18px;
+
+            padding:
+                26px;
+
+            margin-bottom:
+                24px;
+
+            box-shadow:
+                0 8px 30px
+                rgba(0,0,0,.04);
+        }
+
+        .admin-section > h2 {
+            margin:
+                0 0 22px;
+
+            font-size:
+                20px;
+        }
+
+        .form-grid {
+            display:
+                grid;
+
+            gap:
+                18px;
+
+            max-width:
+                750px;
+        }
+
+        label {
+            display:
+                block;
+
+            margin-bottom:
+                8px;
+
+            color:
+                #333;
+
+            font-size:
+                13px;
+
+            font-weight:
+                600;
+        }
+
+        input,
+        textarea,
+        select {
+            width:
+                100%;
+
+            min-height:
+                46px;
+
+            padding:
+                11px 13px;
+
+            border:
+                1px solid #dcdcdc;
+
+            border-radius:
+                10px;
+
+            background:
+                #fff;
+
+            color:
+                #111;
+
+            font-family:
+                inherit;
+
+            font-size:
+                14px;
+
+            outline:
+                none;
+        }
+
+        textarea {
+            min-height:
+                110px;
+
+            resize:
+                vertical;
+        }
+
+        input:focus,
+        textarea:focus,
+        select:focus {
+            border-color:
+                #111;
+
+            box-shadow:
+                0 0 0 3px
+                rgba(0,0,0,.06);
+        }
+
+        button {
+            border:
+                0;
+
+            border-radius:
+                10px;
+
+            padding:
+                11px 16px;
+
+            background:
+                #111;
+
+            color:
+                #fff;
+
+            font-family:
+                inherit;
+
+            font-size:
+                14px;
+
+            font-weight:
+                700;
+
+            cursor:
+                pointer;
+        }
+
+        button:hover {
+            background:
+                #2b2b2b;
+        }
+
+        button:disabled {
+            opacity:
+                .6;
+
+            cursor:
+                not-allowed;
+        }
+
+        .bouton-danger {
+            background:
+                #b42318 !important;
+        }
+
+        .bouton-danger:hover {
+            background:
+                #8f1c13 !important;
+        }
+
+        /* LIVRAISON */
+
+        .livraison-grid {
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0,1fr)
+                );
+
+            gap:
+                16px;
+        }
+
+        .livraison-champ {
+            padding:
+                16px;
+
+            background:
+                #fafafa;
+
+            border:
+                1px solid #e8e8e8;
+
+            border-radius:
+                12px;
+        }
+
+        .info-admin {
+            padding:
+                14px 16px;
+
+            margin-top:
+                16px;
+
+            background:
+                #fafafa;
+
+            border:
+                1px solid #e7e7e7;
+
+            border-radius:
+                10px;
+
+            color:
+                #666;
+
+            font-size:
+                13px;
+
+            line-height:
+                1.5;
+        }
+
+        /* PRODUITS */
+
+        #liste-produits {
+            display:
+                grid;
+
+            gap:
+                18px;
+        }
+
+        .admin-produit {
+            background:
+                #fafafa;
+
+            border:
+                1px solid #e5e5e5;
+
+            border-radius:
+                14px;
+
+            padding:
+                20px;
+        }
+
+        .admin-produit h2 {
+            margin:
+                0 0 16px;
+
+            font-size:
+                18px;
+        }
+
+        .produit-champs {
+            display:
+                grid;
+
+            grid-template-columns:
+                2fr 1fr 1fr;
+
+            gap:
+                14px;
+        }
+
+        .admin-photos {
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(
+                    auto-fill,
+                    minmax(130px,1fr)
+                );
+
+            gap:
+                12px;
+
+            margin-bottom:
+                16px;
+        }
+
+        .admin-photo {
+            position:
+                relative;
+
+            overflow:
+                hidden;
+
+            aspect-ratio:
+                1/1;
+
+            background:
+                #eee;
+
+            border:
+                1px solid #e0e0e0;
+
+            border-radius:
+                12px;
+        }
+
+        .admin-photo img {
+            display:
+                block;
+
+            width:
+                100%;
+
+            height:
+                100%;
+
+            object-fit:
+                cover;
+        }
+
+        .admin-photo button {
+            position:
+                absolute;
+
+            top:
+                7px;
+
+            right:
+                7px;
+
+            width:
+                30px;
+
+            height:
+                30px;
+
+            padding:
+                0;
+
+            border-radius:
+                8px;
+
+            background:
+                rgba(0,0,0,.75);
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                center;
+        }
+
+        .produit-actions {
+            display:
+                flex;
+
+            flex-wrap:
+                wrap;
+
+            gap:
+                10px;
+
+            margin-top:
+                16px;
+        }
+
+        .enregistrer-produits,
+        .ajouter-produit {
+            width:
+                100%;
+
+            min-height:
+                50px;
+
+            margin-top:
+                10px;
+
+            font-size:
+                15px;
+        }
+
+        /* COMMANDES */
+
+        .section-header {
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                space-between;
+
+            gap:
+                20px;
+
+            margin-bottom:
+                20px;
+        }
+
+        .section-header h2 {
+            margin:
+                0 0 6px;
+        }
+
+        .section-description {
+            margin:
+                0;
+
+            color:
+                #777;
+
+            font-size:
+                13px;
+        }
+
+        .commandes-stats {
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(
+                    4,
+                    minmax(0,1fr)
+                );
+
+            gap:
+                12px;
+
+            margin-bottom:
+                20px;
+        }
+
+        .stat-card {
+            padding:
+                16px;
+
+            background:
+                #fafafa;
+
+            border:
+                1px solid #e8e8e8;
+
+            border-radius:
+                12px;
+        }
+
+        .stat-label {
+            margin-bottom:
+                7px;
+
+            color:
+                #777;
+
+            font-size:
+                12px;
+        }
+
+        .stat-value {
+            font-size:
+                25px;
+
+            font-weight:
+                800;
+        }
+
+        .commandes-filtres {
+            display:
+                grid;
+
+            grid-template-columns:
+                minmax(0,1fr)
+                190px
+                auto;
+
+            gap:
+                12px;
+
+            margin-bottom:
+                20px;
+        }
+
+        .checkbox-archives {
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            gap:
+                8px;
+
+            margin:
+                0;
+
+            white-space:
+                nowrap;
+
+            color:
+                #555;
+        }
+
+        .checkbox-archives input {
+            width:
+                auto;
+
+            min-height:
+                auto;
+        }
+
+        .liste-commandes {
+            display:
+                grid;
+
+            gap:
+                16px;
+        }
+
+        .chargement-commandes {
+            padding:
+                30px;
+
+            text-align:
+                center;
+
+            background:
+                #fafafa;
+
+            border-radius:
+                12px;
+
+            color:
+                #777;
+        }
+
+        .aucune-commande {
+            padding:
+                30px;
+
+            text-align:
+                center;
+
+            background:
+                #fafafa;
+
+            border:
+                1px solid #e8e8e8;
+
+            border-radius:
+                12px;
+
+            color:
+                #777;
+        }
+
+        .commande-card {
+            padding:
+                20px;
+
+            background:
+                #fafafa;
+
+            border:
+                1px solid #e5e5e5;
+
+            border-radius:
+                14px;
+        }
+
+        .commande-archivee {
+            opacity:
+                .7;
+        }
+
+        .commande-header {
+            display:
+                flex;
+
+            align-items:
+                flex-start;
+
+            justify-content:
+                space-between;
+
+            gap:
+                20px;
+
+            margin-bottom:
+                18px;
+        }
+
+        .commande-numero {
+            font-size:
+                18px;
+
+            font-weight:
+                800;
+        }
+
+        .commande-date {
+            margin-top:
+                4px;
+
+            color:
+                #777;
+
+            font-size:
+                12px;
+        }
+
+        .commande-total {
+            font-size:
+                18px;
+
+            font-weight:
+                800;
+
+            white-space:
+                nowrap;
+        }
+
+        .commande-grid {
+            display:
+                grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0,1fr)
+                );
+
+            gap:
+                14px;
+
+            margin-bottom:
+                16px;
+        }
+
+        .commande-bloc {
+            padding:
+                14px;
+
+            background:
+                #fff;
+
+            border:
+                1px solid #e8e8e8;
+
+            border-radius:
+                11px;
+        }
+
+        .commande-bloc h3 {
+            margin:
+                0 0 10px;
+
+            font-size:
+                14px;
+        }
+
+        .commande-bloc p {
+            margin:
+                5px 0;
+
+            color:
+                #666;
+
+            font-size:
+                13px;
+
+            line-height:
+                1.45;
+        }
+
+        .commande-produits {
+            margin-top:
+                16px;
+
+            padding-top:
+                16px;
+
+            border-top:
+                1px solid #e5e5e5;
+        }
+
+        .commande-produits h3 {
+            margin:
+                0 0 10px;
+
+            font-size:
+                14px;
+        }
+
+        .commande-produit {
+            display:
+                flex;
+
+            justify-content:
+                space-between;
+
+            padding:
+                9px 0;
+
+            border-bottom:
+                1px solid #eee;
+
+            font-size:
+                13px;
+        }
+
+        .commande-produit:last-child {
+            border-bottom:
+                0;
+        }
+
+        .commande-actions {
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            justify-content:
+                space-between;
+
+            gap:
+                15px;
+
+            margin-top:
+                18px;
+
+            padding-top:
+                16px;
+
+            border-top:
+                1px solid #e5e5e5;
+        }
+
+        .commande-statut-zone {
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            gap:
+                12px;
+        }
+
+        .statut-commande {
+            width:
+                auto;
+
+            min-width:
+                165px;
+
+            min-height:
+                42px;
+        }
+
+        .commande-boutons {
+            display:
+                flex;
+
+            flex-wrap:
+                wrap;
+
+            gap:
+                8px;
+        }
+
+        .commande-boutons button {
+            padding:
+                9px 12px;
+
+            font-size:
+                12px;
+        }
+
+        /* RESPONSIVE */
+
+        @media (max-width: 900px) {
+
+            .produit-champs {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .commandes-stats {
+                grid-template-columns:
+                    repeat(
+                        2,
+                        1fr
+                    );
+            }
+
+            .commandes-filtres {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .commande-grid {
+                grid-template-columns:
+                    1fr;
+            }
+
+            .commande-actions {
+                flex-direction:
+                    column;
+
+                align-items:
+                    stretch;
+            }
+
+            .commande-statut-zone {
+                flex-direction:
+                    column;
+
+                align-items:
+                    stretch;
+            }
+
+            .statut-commande {
+                width:
+                    100%;
+            }
+        }
+
+        @media (max-width: 700px) {
+
+            header {
+                padding:
+                    0 20px;
+            }
+
+            nav a:first-child {
+                display:
+                    none;
+            }
+
+            .section-header {
+                flex-direction:
+                    column;
+
+                align-items:
+                    stretch;
+            }
+
+            .commande-header {
+                flex-direction:
+                    column;
+            }
+
+            .livraison-grid {
+                grid-template-columns:
+                    1fr;
+            }
+        }
+
+        @media (max-width: 500px) {
+
+            .admin-section {
+                padding:
+                    20px;
+            }
+
+            .admin-photos {
+                grid-template-columns:
+                    repeat(
+                        2,
+                        1fr
+                    );
+            }
+        }
+
+    </style>
+
+</head>
+
+<body>
+
+<header>
+
+    <div class="logo">
+        Origami Bijoux — Administration
+    </div>
+
+    <nav>
+
+        <a href="/index.html">
+            Voir la boutique
+        </a>
+
+        <a
+            href="/logout"
+            class="deconnexion"
+        >
+            Se déconnecter
+        </a>
+
+    </nav>
+
+</header>
+
+
+<main class="page">
+
+    <div class="titre">
+
+        <h1>
+            Administration
+        </h1>
+
+        <p>
+            Gérez votre boutique, vos produits et vos commandes.
+        </p>
+
+    </div>
+
+
+    <!-- ==================================================
+         ADMINISTRATION DU SITE
+    =================================================== -->
+
+    <section class="admin-section">
+
+        <h2>
+            ⚙️ Administration du site
+        </h2>
+
+        <div class="form-grid">
+
+            <div>
+
+                <label for="nom-site">
+                    Nom du site
+                </label>
+
+                <input
+                    type="text"
+                    id="nom-site"
+                    placeholder="Nom de la boutique"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label for="titre-accueil">
+                    Grand titre de l'accueil
+                </label>
+
+                <input
+                    type="text"
+                    id="titre-accueil"
+                    placeholder="Votre grand titre"
+                >
+
+            </div>
+
+
+            <div>
+
+                <label for="texte-accueil">
+                    Texte d'accueil
+                </label>
+
+                <textarea
+                    id="texte-accueil"
+                    placeholder="Texte présenté sur la page d'accueil"
+                ></textarea>
+
+            </div>
+
+
+            <button
+                type="button"
+                onclick="
+                    sauvegarderPersonnalisation()
+                "
+            >
+                💾 Enregistrer la personnalisation
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         LIVRAISON
+    =================================================== -->
+
+    <section class="admin-section">
+
+        <h2>
+            🚚 Livraison
+        </h2>
+
+        <div class="livraison-grid">
+
+            <div class="livraison-champ">
+
+                <label for="prix-point-relais">
+                    Prix point de retrait
+                </label>
+
+                <input
+                    type="number"
+                    id="prix-point-relais"
+                    min="0"
+                    step="0.01"
+                    value="3"
+                >
+
+            </div>
+
+
+            <div class="livraison-champ">
+
+                <label for="prix-domicile">
+                    Prix livraison à domicile
+                </label>
+
+                <input
+                    type="number"
+                    id="prix-domicile"
+                    min="0"
+                    step="0.01"
+                    value="5"
+                >
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            onclick="
+                sauvegarderLivraison()
+            "
+            style="margin-top:18px;"
+        >
+            💾 Enregistrer les tarifs
+        </button>
+
+
+        <div class="info-admin">
+            Les tarifs sont utilisés automatiquement
+            lors de la création du paiement Stripe.
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         COMMANDES
+    =================================================== -->
+
+    <section class="admin-section">
+
+        <div class="section-header">
+
+            <div>
+
+                <h2>
+                    📦 Commandes
+                </h2>
+
+                <p class="section-description">
+                    Consultez, préparez et suivez vos commandes.
+                </p>
+
+            </div>
+
+
+            <button
+                type="button"
+                onclick="chargerCommandes()"
+            >
+                ↻ Actualiser
+            </button>
+
+        </div>
+
+
+        <div class="commandes-stats">
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Total
+                </div>
+
+                <div
+                    id="stat-total"
+                    class="stat-value"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    À préparer
+                </div>
+
+                <div
+                    id="stat-a-preparer"
+                    class="stat-value"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Préparées
+                </div>
+
+                <div
+                    id="stat-preparees"
+                    class="stat-value"
+                >
+                    0
+                </div>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <div class="stat-label">
+                    Expédiées
+                </div>
+
+                <div
+                    id="stat-expediees"
+                    class="stat-value"
+                >
+                    0
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="commandes-filtres">
+
+            <input
+                type="search"
+                id="recherche-commandes"
+                placeholder="Rechercher un client, produit, ville..."
+            >
+
+
+            <select
+                id="filtre-statut"
+            >
+
+                <option value="toutes">
+                    Tous les statuts
+                </option>
+
+                <option value="a_preparer">
+                    À préparer
+                </option>
+
+                <option value="preparee">
+                    Préparées
+                </option>
+
+                <option value="expediee">
+                    Expédiées
+                </option>
+
+            </select>
+
+
+            <label
+                class="checkbox-archives"
+            >
+
+                <input
+                    type="checkbox"
+                    id="afficher-archivees"
+                >
+
+                Afficher les archives
+
+            </label>
+
+        </div>
+
+
+        <div
+            id="liste-commandes"
+            class="liste-commandes"
+        >
+
+            <div class="chargement-commandes">
+                Chargement des commandes...
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ==================================================
+         PRODUITS
+    =================================================== -->
+
+    <section class="admin-section">
+
+        <h2>
+            🛍️ Produits
+        </h2>
+
+
+        <div
+            id="liste-produits"
+        ></div>
+
+
+        <button
+            type="button"
+            class="enregistrer-produits"
+            onclick="
+                sauvegarderProduits()
+            "
+        >
+            💾 Enregistrer les produits
+        </button>
+
+
+        <button
+            type="button"
+            class="ajouter-produit"
+            onclick="
+                ajouterProduit()
+            "
+        >
+            ＋ Ajouter un produit
+        </button>
+
+
+        <div class="info-admin">
+
+            Modifiez un produit puis cliquez sur
+            <strong>Enregistrer les produits</strong>.
+
+        </div>
+
+    </section>
+
+</main>
+
+
+<script src="/admin.js"></script>
+
+
+<!-- ==================================================
+     COMMANDES
+================================================== -->
+
+<script>
+
+let toutesLesCommandes = [];
+
+async function chargerCommandes() {
+
+    const liste =
+        document.getElementById(
+            "liste-commandes"
+        );
+
+    if (!liste) {
+        return;
+    }
+
+    liste.innerHTML = `
+        <div class="chargement-commandes">
+            Chargement des commandes...
+        </div>
+    `;
+
+    try {
+
+        const reponse =
+            await fetch(
+                "/api/admin/orders",
+                {
+                    credentials:
+                        "same-origin",
+
+                    cache:
+                        "no-store"
+                }
+            );
+
+        const resultat =
+            await reponse.json();
+
+        if (!reponse.ok) {
+
+            throw new Error(
+                resultat.erreur ||
+                "Impossible de charger les commandes."
+            );
+        }
+
+        toutesLesCommandes =
+            Array.isArray(
+                resultat.commandes
+            )
+                ? resultat.commandes
+                : [];
+
+        afficherStatistiquesCommandes();
+
+        appliquerFiltresCommandes();
+
+    } catch (erreur) {
+
+        console.error(
+            erreur
+        );
+
+        liste.innerHTML = `
+            <div class="aucune-commande">
+                ❌ Impossible de charger les commandes.
+                <br><br>
+                ${echapperAdmin(
+                    erreur.message
+                )}
+            </div>
+        `;
+    }
+}
+
+function afficherStatistiquesCommandes() {
+
+    document.getElementById(
+        "stat-total"
+    ).textContent =
+        toutesLesCommandes.length;
+
+    document.getElementById(
+        "stat-a-preparer"
+    ).textContent =
+        toutesLesCommandes.filter(
+            commande =>
+                (
+                    commande.statut ||
+                    "a_preparer"
+                ) === "a_preparer"
+        ).length;
+
+    document.getElementById(
+        "stat-preparees"
+    ).textContent =
+        toutesLesCommandes.filter(
+            commande =>
+                commande.statut === "preparee"
+        ).length;
+
+    document.getElementById(
+        "stat-expediees"
+    ).textContent =
+        toutesLesCommandes.filter(
+            commande =>
+                commande.statut === "expediee"
+        ).length;
+}
+
+function appliquerFiltresCommandes() {
+
+    const recherche =
+        document.getElementById(
+            "recherche-commandes"
+        )?.value
+            .trim()
+            .toLowerCase() ||
+        "";
+
+    const statut =
+        document.getElementById(
+            "filtre-statut"
+        )?.value ||
+        "toutes";
+
+    const archives =
+        document.getElementById(
+            "afficher-archivees"
+        )?.checked ||
+        false;
+
+    let commandes =
+        [...toutesLesCommandes];
+
+    if (!archives) {
+
+        commandes =
+            commandes.filter(
+                commande =>
+                    commande.archivee !== true
+            );
+    }
+
+    if (
+        statut !== "toutes"
+    ) {
+
+        commandes =
+            commandes.filter(
+                commande =>
+                    (
+                        commande.statut ||
+                        "a_preparer"
+                    ) === statut
+            );
+    }
+
+    if (recherche) {
+
+        commandes =
+            commandes.filter(
+                commande => {
+
+                    const point =
+                        commande
+                            .livraison
+                            ?.pointRetrait;
+
+                    const texte =
+                        [
+                            commande.email,
+                            commande.stripeSessionId,
+                            commande.paymentIntent,
+                            point?.nom,
+                            point?.adresse,
+                            point?.ville,
+                            point?.codePostal,
+                            ...(Array.isArray(
+                                commande.panier
+                            )
+                                ? commande.panier.map(
+                                    article =>
+                                        article.nom ||
+                                        article.id
+                                )
+                                : [])
+                        ]
+                            .filter(Boolean)
+                            .join(" ")
+                            .toLowerCase();
+
+                    return texte.includes(
+                        recherche
+                    );
+                }
+            );
+    }
+
+    afficherCommandes(
+        commandes
+    );
+}
+
+function afficherCommandes(
+    commandes
+) {
+
+    const liste =
+        document.getElementById(
+            "liste-commandes"
+        );
+
+    if (!liste) {
+        return;
+    }
+
+    if (
+        commandes.length === 0
+    ) {
+
+        liste.innerHTML = `
+            <div class="aucune-commande">
+                📭 Aucune commande pour le moment.
+            </div>
+        `;
+
+        return;
+    }
+
+    liste.innerHTML =
+        commandes
+            .map(
+                commande =>
+                    creerCarteCommande(
+                        commande
+                    )
+            )
+            .join("");
+}
+
+function creerCarteCommande(
+    commande
+) {
+
+    const numero =
+        "CMD-" +
+        String(
+            commande.stripeSessionId ||
+            ""
+        )
+            .slice(-8)
+            .toUpperCase();
+
+    const statut =
+        commande.statut ||
+        "a_preparer";
+
+    const statutTexte = {
+        a_preparer:
+            "À préparer",
+
+        preparee:
+            "Préparée",
+
+        expediee:
+            "Expédiée"
+    }[statut] ||
+    "À préparer";
+
+    const total =
+        Number(
+            commande.total ||
+            0
+        );
+
+    const point =
+        commande
+            .livraison
+            ?.pointRetrait;
+
+    let livraisonHTML = "";
+
+    if (
+        commande.livraison?.mode ===
+            "retrait" &&
+        point
+    ) {
+
+        livraisonHTML = `
+            <h3>
+                📍 Point de retrait
+            </h3>
+
+            <p>
+                <strong>
+                    ${echapperAdmin(
+                        point.nom
+                    )}
+                </strong>
+            </p>
+
+            <p>
+                ${echapperAdmin(
+                    point.adresse
+                )}
+
+                <br>
+
+                ${echapperAdmin(
+                    point.codePostal
+                )}
+
+                ${echapperAdmin(
+                    point.ville
+                )}
+            </p>
+        `;
+
+    } else {
+
+        livraisonHTML = `
+            <h3>
+                🏠 Livraison à domicile
+            </h3>
+
+            <p>
+                Adresse fournie par Stripe.
+            </p>
+        `;
+    }
+
+    const produitsHTML =
+        Array.isArray(
+            commande.panier
+        )
+            ? commande.panier
+                .map(
+                    article => `
+                        <div class="commande-produit">
+
+                            <span>
+
+                                ${echapperAdmin(
+                                    article.nom ||
+                                    article.id ||
+                                    "Produit"
+                                )}
+
+                                ×
+                                ${Number(
+                                    article.quantite ||
+                                    1
+                                )}
+
+                            </span>
+
+                        </div>
+                    `
+                )
+                .join("")
+            : "";
+
+    return `
+        <article
+            class="
+                commande-card
+                ${
+                    commande.archivee
+                        ? "commande-archivee"
+                        : ""
+                }
+            "
+        >
+
+            <div class="commande-header">
+
+                <div>
+
+                    <div class="commande-numero">
+                        ${numero}
+                    </div>
+
+                    <div class="commande-date">
+                        ${formaterDateAdmin(
+                            commande.date
+                        )}
+                    </div>
+
+                </div>
+
+                <div class="commande-total">
+                    ${formaterPrixAdmin(
+                        total
+                    )}
+                </div>
+
+            </div>
+
+            <div class="commande-grid">
+
+                <div class="commande-bloc">
+
+                    <h3>
+                        👤 Client
+                    </h3>
+
+                    <p>
+                        ${echapperAdmin(
+                            commande.email ||
+                            "Email non renseigné"
+                        )}
+                    </p>
+
+                </div>
+
+                <div class="commande-bloc">
+                    ${livraisonHTML}
+                </div>
+
+            </div>
+
+            <div class="commande-produits">
+
+                <h3>
+                    🛍️ Produits
+                </h3>
+
+                ${
+                    produitsHTML ||
+                    "<p>Aucun produit.</p>"
+                }
+
+            </div>
+
+            <div class="commande-actions">
+
+                <div
+                    class="commande-statut-zone"
+                >
+
+                    <strong>
+                        ${statutTexte}
+                    </strong>
+
+                    <select
+                        class="statut-commande"
+                        onchange="
+                            changerStatutCommande(
+                                '${securiserAdmin(
+                                    commande.stripeSessionId
+                                )}',
+                                this.value
+                            )
+                        "
+                    >
+
+                        <option
+                            value="a_preparer"
+                            ${
+                                statut ===
+                                "a_preparer"
+                                    ? "selected"
+                                    : ""
+                            }
+                        >
+                            À préparer
+                        </option>
+
+                        <option
+                            value="preparee"
+                            ${
+                                statut ===
+                                "preparee"
+                                    ? "selected"
+                                    : ""
+                            }
+                        >
+                            Préparée
+                        </option>
+
+                        <option
+                            value="expediee"
+                            ${
+                                statut ===
+                                "expediee"
+                                    ? "selected"
+                                    : ""
+                            }
+                        >
+                            Expédiée
+                        </option>
+
+                    </select>
+
+                </div>
+
+                <div class="commande-boutons">
+
+                    <button
+                        type="button"
+                        onclick="
+                            imprimerCommande(
+                                '${securiserAdmin(
+                                    commande.stripeSessionId
+                                )}'
+                            )
+                        "
+                    >
+                        🖨️ Imprimer
+                    </button>
+
+                    <button
+                        type="button"
+                        onclick="
+                            archiverCommande(
+                                '${securiserAdmin(
+                                    commande.stripeSessionId
+                                )}'
+                            )
+                        "
+                    >
+                        📁 Archiver
+                    </button>
+
+                    <button
+                        type="button"
+                        class="bouton-danger"
+                        onclick="
+                            supprimerCommande(
+                                '${securiserAdmin(
+                                    commande.stripeSessionId
+                                )}'
+                            )
+                        "
+                    >
+                        🗑️ Supprimer
+                    </button>
+
+                </div>
+
+            </div>
+
+        </article>
+    `;
+}
+
+
+// ============================================================
+// STATUT
+// ============================================================
+
+async function changerStatutCommande(
+    id,
+    statut
+) {
+    await modifierCommandeAdmin(
+        id,
+        {
+            statut
+        }
+    );
+}
+
+
+// ============================================================
+// ARCHIVER
+// ============================================================
+
+async function archiverCommande(
+    id
+) {
+
+    if (
+        !confirm(
+            "Archiver cette commande ?"
+        )
+    ) {
+        return;
+    }
+
+    await modifierCommandeAdmin(
+        id,
+        {
+            archivee:
+                true
+        }
+    );
+}
+
+
+// ============================================================
+// MODIFIER COMMANDE
+// ============================================================
+
+async function modifierCommandeAdmin(
+    id,
+    donnees
+) {
+
+    try {
+
+        const reponse =
+            await fetch(
+                "/api/admin/orders/" +
+                encodeURIComponent(id),
+                {
+                    method:
+                        "PATCH",
+
+                    credentials:
+                        "same-origin",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify(
+                            donnees
+                        )
+                }
+            );
+
+        const resultat =
+            await reponse.json();
+
+        if (!reponse.ok) {
+
+            throw new Error(
+                resultat.erreur ||
+                "Impossible de modifier la commande."
+            );
+        }
+
+        await chargerCommandes();
+
+    } catch (erreur) {
+
+        alert(
+            erreur.message
+        );
+    }
+}
+
+
+// ============================================================
+// SUPPRIMER COMMANDE
+// ============================================================
+
+async function supprimerCommande(
+    id
+) {
+
+    if (
+        !confirm(
+            "⚠️ Supprimer définitivement cette commande ?"
+        )
+    ) {
+        return;
+    }
+
+    try {
+
+        const reponse =
+            await fetch(
+                "/api/admin/orders/" +
+                encodeURIComponent(id),
+                {
+                    method:
+                        "DELETE",
+
+                    credentials:
+                        "same-origin"
+                }
+            );
+
+        const resultat =
+            await reponse.json();
+
+        if (!reponse.ok) {
+
+            throw new Error(
+                resultat.erreur ||
+                "Impossible de supprimer la commande."
+            );
+        }
+
+        await chargerCommandes();
+
+    } catch (erreur) {
+
+        alert(
+            erreur.message
+        );
+    }
+}
+
+
+// ============================================================
+// IMPRESSION
+// ============================================================
+
+function imprimerCommande(
+    id
+) {
+
+    const commande =
+        toutesLesCommandes.find(
+            item =>
+                item.stripeSessionId ===
+                id
+        );
+
+    if (!commande) {
+
+        alert(
+            "Commande introuvable."
+        );
+
+        return;
+    }
+
+    const point =
+        commande
+            .livraison
+            ?.pointRetrait;
+
+    const produits =
+        Array.isArray(
+            commande.panier
+        )
+            ? commande.panier
+                .map(
+                    article => `
+                        <tr>
+
+                            <td>
+                                ${echapperAdmin(
+                                    article.nom ||
+                                    article.id
+                                )}
+                            </td>
+
+                            <td>
+                                ${Number(
+                                    article.quantite ||
+                                    1
+                                )}
+                            </td>
+
+                        </tr>
+                    `
+                )
+                .join("")
+            : "";
+
+    const fenetre =
+        window.open(
+            "",
+            "_blank",
+            "width=800,height=700"
+        );
+
+    if (!fenetre) {
+
+        alert(
+            "La fenêtre d'impression est bloquée."
+        );
+
+        return;
+    }
+
+    fenetre.document.write(`
+
+        <!DOCTYPE html>
+
+        <html lang="fr">
+
+        <head>
+
+            <meta charset="UTF-8">
+
+            <title>
+                Commande
+            </title>
+
+            <style>
+
+                body {
+                    font-family:Arial,sans-serif;
+                    max-width:800px;
+                    margin:40px auto;
+                    color:#111;
+                }
+
+                .bloc {
+                    border:1px solid #ddd;
+                    border-radius:10px;
+                    padding:15px;
+                    margin-bottom:20px;
+                }
+
+                table {
+                    width:100%;
+                    border-collapse:collapse;
+                }
+
+                th,
+                td {
+                    padding:10px;
+                    text-align:left;
+                    border-bottom:1px solid #ddd;
+                }
+
+                .total {
+                    margin-top:20px;
+                    text-align:right;
+                    font-size:20px;
+                    font-weight:bold;
+                }
+
+            </style>
+
+        </head>
+
+        <body>
+
+            <h1>
+                Origami Bijoux
+            </h1>
+
+            <p>
+                ${echapperAdmin(
+                    "CMD-" +
+                    String(
+                        commande.stripeSessionId
+                    )
+                        .slice(-8)
+                        .toUpperCase()
+                )}
+
+                ·
+
+                ${formaterDateAdmin(
+                    commande.date
+                )}
+            </p>
+
+            <div class="bloc">
+
+                <strong>
+                    Client
+                </strong>
+
+                <p>
+                    ${echapperAdmin(
+                        commande.email ||
+                        ""
+                    )}
+                </p>
+
+            </div>
+
+            <div class="bloc">
+
+                <strong>
+
+                    ${
+                        commande.livraison?.mode ===
+                        "retrait"
+                            ? "📍 Point de retrait"
+                            : "🏠 Livraison à domicile"
+                    }
+
+                </strong>
+
+                <p>
+
+                    ${
+                        point
+                            ? `
+                                ${echapperAdmin(
+                                    point.nom
+                                )}
+                                <br>
+                                ${echapperAdmin(
+                                    point.adresse
+                                )}
+                                <br>
+                                ${echapperAdmin(
+                                    point.codePostal
+                                )}
+                                ${echapperAdmin(
+                                    point.ville
+                                )}
+                            `
+                            : `
+                                Adresse disponible dans Stripe.
+                            `
+                    }
+
+                </p>
+
+            </div>
+
+            <div class="bloc">
+
+                <h3>
+                    Produits
+                </h3>
+
+                <table>
+
+                    <thead>
+
+                        <tr>
+
+                            <th>
+                                Produit
+                            </th>
+
+                            <th>
+                                Quantité
+                            </th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        ${produits}
+
+                    </tbody>
+
+                </table>
+
+                <div class="total">
+
+                    Total :
+                    ${formaterPrixAdmin(
+                        commande.total
+                    )}
+
+                </div>
+
+            </div>
+
+            <script>
+
+                window.onload = function() {
+                    window.print();
+                };
+
+            <\/script>
+
+        </body>
+
+        </html>
+
+    `);
+
+    fenetre.document.close();
+}
+
+
+// ============================================================
+// OUTILS
+// ============================================================
+
+function formaterPrixAdmin(
+    valeur
+) {
+
+    return (
+        Number(
+            valeur || 0
+        )
+            .toFixed(2)
+            .replace(
+                ".",
+                ","
+            ) +
+        " €"
+    );
+}
+
+function formaterDateAdmin(
+    date
+) {
+
+    if (!date) {
+        return "Date inconnue";
+    }
+
+    const valeur =
+        new Date(
+            date
+        );
+
+    if (
+        Number.isNaN(
+            valeur.getTime()
+        )
+    ) {
+        return "Date inconnue";
+    }
+
+    return valeur.toLocaleString(
+        "fr-FR"
+    );
+}
+
+function echapperAdmin(
+    texte
+) {
+
+    return String(
+        texte ?? ""
+    )
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+}
+
+function securiserAdmin(
+    texte
+) {
+
+    return String(
+        texte ?? ""
+    )
+        .replace(
+            /\\/g,
+            "\\\\"
+        )
+        .replace(
+            /'/g,
+            "\\'"
+        );
+}
+
+
+// ============================================================
+// COMMANDES AU CHARGEMENT
+// ============================================================
+
+document.addEventListener(
+    "DOMContentLoaded",
+    () => {
+
+        chargerCommandes();
+
+        document
+            .getElementById(
+                "recherche-commandes"
+            )
+            ?.addEventListener(
+                "input",
+                appliquerFiltresCommandes
+            );
+
+        document
+            .getElementById(
+                "filtre-statut"
+            )
+            ?.addEventListener(
+                "change",
+                appliquerFiltresCommandes
+            );
+
+        document
+            .getElementById(
+                "afficher-archivees"
+            )
+            ?.addEventListener(
+                "change",
+                appliquerFiltresCommandes
+            );
+
+    }
+);
+
+</script>
+
+</body>
+
+</html>

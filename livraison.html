@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Livraison
+    </title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+            margin: 0;
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #f6f6f6;
+
+            color: #171717;
+        }
+
+        header {
+
+            height: 72px;
+
+            background: #fff;
+
+            border-bottom:
+                1px solid #e8e8e8;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 6%;
+        }
+
+        .logo {
+
+            font-size: 20px;
+
+            font-weight: 700;
+        }
+
+        .retour {
+
+            text-decoration: none;
+
+            color: #666;
+
+            font-size: 14px;
+        }
+
+        .page {
+
+            max-width: 950px;
+
+            margin: 45px auto;
+
+            padding:
+                0 20px 60px;
+        }
+
+        .titre {
+
+            margin-bottom: 30px;
+        }
+
+        .titre h1 {
+
+            margin:
+                0 0 8px;
+
+            font-size: 34px;
+
+            letter-spacing: -1px;
+        }
+
+        .titre p {
+
+            margin: 0;
+
+            color: #777;
+        }
+
+        .carte {
+
+            background: #fff;
+
+            border:
+                1px solid #e5e5e5;
+
+            border-radius: 18px;
+
+            padding: 26px;
+
+            margin-bottom: 20px;
+
+            box-shadow:
+                0 8px 30px
+                rgba(0,0,0,.04);
+        }
+
+        .modes {
+
+            display: grid;
+
+            grid-template-columns:
+                repeat(
+                    2,
+                    minmax(0,1fr)
+                );
+
+            gap: 14px;
+        }
+
+        .mode {
+
+            padding: 18px;
+
+            border:
+                1px solid #ddd;
+
+            border-radius: 14px;
+
+            cursor: pointer;
+
+            background: #fff;
+
+            transition: .2s;
+        }
+
+        .mode:hover {
+
+            border-color: #111;
+        }
+
+        .mode.active {
+
+            border-color: #111;
+
+            box-shadow:
+                0 0 0 2px
+                rgba(0,0,0,.08);
+        }
+
+        .mode strong {
+
+            display: block;
+
+            margin-bottom: 6px;
+        }
+
+        .mode span {
+
+            color: #777;
+
+            font-size: 13px;
+        }
+
+        input {
+
+            width: 100%;
+
+            min-height: 48px;
+
+            padding:
+                0 13px;
+
+            border:
+                1px solid #ddd;
+
+            border-radius: 10px;
+
+            font-family: inherit;
+
+            font-size: 14px;
+
+            outline: none;
+        }
+
+        input:focus {
+
+            border-color: #111;
+        }
+
+        button {
+
+            border: 0;
+
+            border-radius: 10px;
+
+            padding:
+                12px 16px;
+
+            background: #111;
+
+            color: #fff;
+
+            font-family: inherit;
+
+            font-weight: 700;
+
+            cursor: pointer;
+        }
+
+        .recherche {
+
+            display: flex;
+
+            gap: 10px;
+
+            margin-top: 18px;
+        }
+
+        .recherche input {
+
+            flex: 1;
+        }
+
+        .resultats {
+
+            display: grid;
+
+            gap: 12px;
+
+            margin-top: 18px;
+        }
+
+        .point {
+
+            display: flex;
+
+            justify-content: space-between;
+
+            gap: 15px;
+
+            padding: 16px;
+
+            background: #fafafa;
+
+            border:
+                1px solid #e5e5e5;
+
+            border-radius: 12px;
+        }
+
+        .point-info {
+
+            min-width: 0;
+        }
+
+        .point-nom {
+
+            font-weight: 700;
+
+            margin-bottom: 5px;
+        }
+
+        .point p {
+
+            margin: 4px 0;
+
+            color: #666;
+
+            font-size: 13px;
+        }
+
+        .point-type {
+
+            display: inline-block;
+
+            margin-bottom: 6px;
+
+            font-size: 12px;
+
+            color: #777;
+        }
+
+        .choisir {
+
+            align-self: center;
+
+            flex-shrink: 0;
+        }
+
+        #zone-domicile {
+
+            display: none;
+        }
+
+        #zone-retrait {
+
+            display: block;
+        }
+
+        .point-selectionne {
+
+            margin-top: 18px;
+
+            padding: 18px;
+
+            background: #fafafa;
+
+            border:
+                1px solid #ddd;
+
+            border-radius: 12px;
+        }
+
+        .point-selectionne .ok {
+
+            margin-bottom: 10px;
+
+            font-weight: 700;
+        }
+
+        .continuer {
+
+            width: 100%;
+
+            margin-top: 20px;
+
+            min-height: 52px;
+
+            font-size: 15px;
+        }
+
+        .message {
+
+            padding: 15px;
+
+            background: #fff1f1;
+
+            color: #9c1c1c;
+
+            border-radius: 10px;
+        }
+
+        @media (max-width: 700px) {
+
+            header {
+
+                padding: 0 20px;
+            }
+
+            .modes {
+
+                grid-template-columns: 1fr;
+            }
+
+            .recherche {
+
+                flex-direction: column;
+            }
+
+            .point {
+
+                flex-direction: column;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div
+        id="nom-site-header"
+        class="logo"
+    >
+        Origami Bijoux
+    </div>
+
+
+    <a
+        href="/index.html"
+        class="retour"
+    >
+        ← Boutique
+    </a>
+
+</header>
+
+
+<main class="page">
+
+
+    <div class="titre">
+
+        <h1>
+            Choisissez votre livraison
+        </h1>
+
+        <p>
+            Sélectionnez le mode de livraison qui vous convient.
+        </p>
+
+    </div>
+
+
+    <div class="carte">
+
+
+        <div class="modes">
+
+
+            <div
+                id="mode-retrait"
+                class="mode active"
+                onclick="
+                    changerMode('retrait')
+                "
+            >
+
+                <strong>
+                    📍 Point de retrait
+                </strong>
+
+                <span>
+                    Choisissez votre point de retrait — 3 €
+                </span>
+
+            </div>
+
+
+            <div
+                id="mode-domicile"
+                class="mode"
+                onclick="
+                    changerMode('domicile')
+                "
+            >
+
+                <strong>
+                    🏠 Livraison à domicile
+                </strong>
+
+                <span>
+                    Livraison à votre adresse — 5 €
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <div
+            id="zone-retrait"
+        >
+
+            <div class="recherche">
+
+                <input
+                    id="recherche-point"
+                    type="search"
+                    placeholder="Code postal, ville, nom du point..."
+                >
+
+                <button
+                    type="button"
+                    onclick="rechercherPoints()"
+                >
+                    Rechercher
+                </button>
+
+            </div>
+
+
+            <div
+                id="resultats-points"
+                class="resultats"
+            ></div>
+
+
+            <div
+                id="point-selectionne"
+            ></div>
+
+        </div>
+
+
+        <div
+            id="zone-domicile"
+        >
+
+            <div class="point-selectionne">
+
+                <strong>
+                    🏠 Livraison à domicile
+                </strong>
+
+                <p>
+                    Votre adresse sera demandée directement
+                    dans Stripe au moment du paiement.
+                </p>
+
+            </div>
+
+        </div>
+
+
+        <button
+            type="button"
+            class="continuer"
+            onclick="continuerPaiement()"
+        >
+            Continuer vers le paiement
+        </button>
+
+    </div>
+
+
+</main>
+
+
+<script src="/livraison.js"></script>
+
+
+<!-- Chargement du nom du site -->
+
+<script>
+
+async function chargerNomSite() {
+
+    try {
+
+        const reponse =
+            await fetch(
+                "/api/site-settings",
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+
+        if (!reponse.ok) {
+            return;
+        }
+
+
+        const data =
+            await reponse.json();
+
+
+        const nom =
+            data.nomSite ||
+            "Origami Bijoux";
+
+
+        const logo =
+            document.getElementById(
+                "nom-site-header"
+            );
+
+
+        if (logo) {
+
+            logo.textContent =
+                nom;
+        }
+
+
+        document.title =
+            nom +
+            " - Livraison";
+
+
+    } catch (erreur) {
+
+        console.error(
+            "Nom du site :",
+            erreur
+        );
+
+    }
+
+}
+
+
+chargerNomSite();
+
+</script>
+
+
+</body>
+
+</html>

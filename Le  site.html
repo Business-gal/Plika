@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<!-- saved from url=(0022)http://localhost:3000/ -->
+<html lang="fr"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Origami Bijoux</title>
+
+    <link rel="stylesheet" href="./Le  site_files/style.css">
+<style></style></head>
+
+<body>
+
+    <!-- ========================= -->
+    <!-- MENU -->
+    <!-- ========================= -->
+
+    <header>
+
+        <div class="logo">Origami Bijoux</div>
+
+        <nav>
+            <a href="http://localhost:3000/#accueil">Accueil</a>
+            <a href="http://localhost:3000/#boutique">Boutique</a>
+            <a href="http://localhost:3000/#contact">Contact</a>
+
+            <button class="panier-btn" onclick="ouvrirPanier()">
+                🛒 Panier (<span id="nombre-panier">0</span>)
+            </button>
+        </nav>
+
+    </header>
+
+
+    <!-- ========================= -->
+    <!-- ACCUEIL -->
+    <!-- ========================= -->
+
+    <section id="accueil" class="hero">
+
+        <div>
+
+            <h1>Des bijoux pliés avec passion</h1>
+
+            <p>Découvrez nos boucles d'oreilles réalisées en origami.</p>
+
+            <a href="http://localhost:3000/#boutique" class="bouton">
+                Découvrir la collection
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- BOUTIQUE -->
+    <!-- ========================= -->
+
+    <section id="boutique" class="boutique">
+
+        <h2>
+            Notre collection
+        </h2>
+
+        <p class="sous-titre">
+            Des créations originales en origami
+        </p>
+
+
+        <div class="produits" id="liste-boutique">
+
+                <div class="produit" onclick="ouvrirProduit(0)">
+
+                    <img src="./Le  site_files/500x500" alt="Papillon">
+
+                    <h3>
+                        Papillon
+                    </h3>
+
+                    <p>
+                        Boucles d'oreilles papillon en origami.
+                    </p>
+
+                    <strong>
+                        14.90 €
+                    </strong>
+
+                    <p class="stock">
+
+                        Stock : 3
+
+                    </p>
+
+                </div>
+
+            
+
+                <div class="produit" onclick="ouvrirProduit(1)">
+
+                    <img src="./Le  site_files/500x500(1)" alt="Fleur">
+
+                    <h3>
+                        Fleur
+                    </h3>
+
+                    <p>
+                        Délicates boucles d'oreilles fleur en origami.
+                    </p>
+
+                    <strong>
+                        13.90 €
+                    </strong>
+
+                    <p class="stock">
+
+                        Stock : 5
+
+                    </p>
+
+                </div>
+
+            
+
+                <div class="produit" onclick="ouvrirProduit(2)">
+
+                    <img src="./Le  site_files/500x500(2)" alt="Grue japonaise">
+
+                    <h3>
+                        Grue japonaise
+                    </h3>
+
+                    <p>
+                        Une grue japonaise délicatement pliée.
+                    </p>
+
+                    <strong>
+                        16.90 €
+                    </strong>
+
+                    <p class="stock">
+
+                        Stock : 2
+
+                    </p>
+
+                </div>
+
+            
+
+                <div class="produit" onclick="ouvrirProduit(3)">
+
+                    <img src="./Le  site_files/500x500(3)" alt="Cœur">
+
+                    <h3>
+                        Cœur
+                    </h3>
+
+                    <p>
+                        Un petit cœur réalisé en origami.
+                    </p>
+
+                    <strong>
+                        12.90 €
+                    </strong>
+
+                    <p class="stock">
+
+                        Stock : 8
+
+                    </p>
+
+                </div>
+
+            
+
+                <div class="produit" onclick="ouvrirProduit(4)">
+
+                    <img src="./Le  site_files/500x500(4)" alt="Étoile">
+
+                    <h3>
+                        Étoile
+                    </h3>
+
+                    <p>
+                        Des étoiles en origami légères et élégantes.
+                    </p>
+
+                    <strong>
+                        13.90 €
+                    </strong>
+
+                    <p class="stock">
+
+                        Stock : 3
+
+                    </p>
+
+                </div>
+
+            
+
+                <div class="produit" onclick="ouvrirProduit(5)">
+
+                    <img src="./Le  site_files/500x500(5)" alt="Oiseau">
+
+                    <h3>
+                        Oiseau
+                    </h3>
+
+                    <p>
+                        Des boucles inspirées de l'art japonais.
+                    </p>
+
+                    <strong>
+                        15.90 €
+                    </strong>
+
+                    <p class="stock">
+
+                        Stock : 1
+
+                    </p>
+
+                </div>
+
+            </div>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- CONTACT -->
+    <!-- ========================= -->
+
+    <section id="contact" class="contact">
+
+        <h2>
+            Contact
+        </h2>
+
+        <p>
+            Une question sur nos créations ?
+        </p>
+
+        <p>
+            gameone@email.fr
+        </p>
+
+    </section>
+
+
+    <!-- ========================= -->
+    <!-- PANIER -->
+    <!-- ========================= -->
+
+    <div id="fond-panier" class="fond-panier" onclick="fermerPanier()">
+
+        <div class="panier" onclick="event.stopPropagation()">
+
+            <button class="fermer" onclick="fermerPanier()">
+                ✕
+            </button>
+
+
+            <h2>
+                Mon panier 🛒
+            </h2>
+
+
+            <div id="contenu-panier"><p>Votre panier est vide.</p></div>
+
+
+            <div class="total">
+
+                Total :
+                <span id="total">0.00</span>
+                €
+
+            </div>
+
+
+            <button class="commander" onclick="commander()">
+                Passer commande
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- ========================= -->
+    <!-- FOOTER -->
+    <!-- ========================= -->
+
+    <footer>
+
+        <p>
+            © 2026 GAMEONE
+        </p>
+
+    </footer>
+
+
+    <!-- JAVASCRIPT -->
+
+    <script src="./Le  site_files/script.js.téléchargé"></script>
+
+
+
+</body></html>

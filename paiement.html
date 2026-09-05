@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Paiement
+    </title>
+
+
+    <style>
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+
+            margin: 0;
+
+            font-family:
+                Inter,
+                -apple-system,
+                BlinkMacSystemFont,
+                "Segoe UI",
+                sans-serif;
+
+            background: #f6f6f6;
+
+            color: #171717;
+        }
+
+        header {
+
+            height: 72px;
+
+            background: #fff;
+
+            border-bottom:
+                1px solid #e8e8e8;
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: space-between;
+
+            padding: 0 6%;
+        }
+
+        .logo {
+
+            font-size: 20px;
+
+            font-weight: 700;
+        }
+
+        .retour {
+
+            text-decoration: none;
+
+            color: #666;
+
+            font-size: 14px;
+        }
+
+        .page {
+
+            max-width:
+                1050px;
+
+            margin:
+                45px auto;
+
+            padding:
+                0 20px;
+        }
+
+        .titre {
+
+            margin-bottom:
+                30px;
+        }
+
+        .titre h1 {
+
+            margin:
+                0 0 8px;
+
+            font-size:
+                34px;
+
+            letter-spacing:
+                -1px;
+        }
+
+        .titre p {
+
+            margin: 0;
+
+            color: #777;
+        }
+
+        .layout {
+
+            display:
+                grid;
+
+            grid-template-columns:
+                minmax(0, 1fr)
+                350px;
+
+            gap:
+                28px;
+
+            align-items:
+                start;
+        }
+
+        .carte {
+
+            background:
+                #fff;
+
+            border:
+                1px solid #e5e5e5;
+
+            border-radius:
+                18px;
+
+            padding:
+                26px;
+
+            box-shadow:
+                0 8px 30px
+                rgba(0,0,0,.04);
+        }
+
+        .carte h2 {
+
+            margin:
+                0 0 20px;
+
+            font-size:
+                20px;
+        }
+
+        .articles {
+
+            display:
+                grid;
+
+            gap:
+                14px;
+        }
+
+        .article {
+
+            display:
+                flex;
+
+            align-items:
+                center;
+
+            gap:
+                14px;
+
+            padding-bottom:
+                14px;
+
+            border-bottom:
+                1px solid #eee;
+        }
+
+        .article-image {
+
+            width:
+                68px;
+
+            height:
+                68px;
+
+            object-fit:
+                cover;
+
+            border-radius:
+                12px;
+
+            background:
+                #eee;
+        }
+
+        .article-info {
+
+            flex: 1;
+        }
+
+        .article-nom {
+
+            font-weight:
+                700;
+
+            margin-bottom:
+                4px;
+        }
+
+        .article-quantite {
+
+            color:
+                #777;
+
+            font-size:
+                13px;
+        }
+
+        .article-prix {
+
+            font-weight:
+                700;
+
+            white-space:
+                nowrap;
+        }
+
+        .livraison {
+
+            margin-top:
+                28px;
+
+            padding-top:
+                24px;
+
+            border-top:
+                1px solid #eee;
+        }
+
+        .livraison-box {
+
+            padding:
+                17px;
+
+            border:
+                1px solid #e5e5e5;
+
+            border-radius:
+                13px;
+
+            background:
+                #fafafa;
+        }
+
+        .point {
+
+            margin-top:
+                14px;
+
+            padding:
+                13px;
+
+            background:
+                #fff;
+
+            border:
+                1px solid #ddd;
+
+            border-radius:
+                10px;
+        }
+
+        .point p {
+
+            margin:
+                4px 0;
+
+            color:
+                #666;
+
+            font-size:
+                13px;
+        }
+
+        .ligne {
+
+            display:
+                flex;
+
+            justify-content:
+                space-between;
+
+            margin:
+                15px 0;
+
+            color:
+                #555;
+
+            font-size:
+                14px;
+        }
+
+        .ligne.total {
+
+            margin-top:
+                22px;
+
+            padding-top:
+                19px;
+
+            border-top:
+                1px solid #e7e7e7;
+
+            color:
+                #111;
+
+            font-size:
+                20px;
+
+            font-weight:
+                800;
+        }
+
+        .payer {
+
+            width:
+                100%;
+
+            height:
+                54px;
+
+            margin-top:
+                22px;
+
+            border:
+                0;
+
+            border-radius:
+                12px;
+
+            background:
+                #111;
+
+            color:
+                #fff;
+
+            font-size:
+                15px;
+
+            font-weight:
+                700;
+
+            cursor:
+                pointer;
+        }
+
+        .payer:disabled {
+
+            opacity:
+                .6;
+
+            cursor:
+                not-allowed;
+        }
+
+        .securite {
+
+            margin-top:
+                16px;
+
+            text-align:
+                center;
+
+            color:
+                #888;
+
+            font-size:
+                12px;
+
+            line-height:
+                1.5;
+        }
+
+        .erreur {
+
+            padding:
+                15px;
+
+            border-radius:
+                10px;
+
+            background:
+                #fff1f1;
+
+            color:
+                #9c1c1c;
+
+            margin-bottom:
+                20px;
+        }
+
+        .chargement {
+
+            padding:
+                30px;
+
+            text-align:
+                center;
+
+            color:
+                #777;
+        }
+
+        @media (
+            max-width: 800px
+        ) {
+
+            .layout {
+
+                grid-template-columns:
+                    1fr;
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+<header>
+
+    <div
+        id="nom-site-header"
+        class="logo"
+    >
+        Origami Bijoux
+    </div>
+
+
+    <a
+        href="/livraison.html"
+        class="retour"
+    >
+        ← Modifier la livraison
+    </a>
+
+</header>
+
+
+<main class="page">
+
+
+    <div class="titre">
+
+        <h1>
+            Récapitulatif de commande
+        </h1>
+
+        <p>
+            Vérifiez votre commande avant de passer au paiement sécurisé.
+        </p>
+
+    </div>
+
+
+    <div
+        id="message-erreur"
+        style="display:none;"
+        class="erreur"
+    ></div>
+
+
+    <div
+        id="contenu"
+        class="chargement"
+    >
+        Chargement de votre commande...
+    </div>
+
+</main>
+
+
+<script src="/paiement.js"></script>
+
+
+<!-- Chargement du nom du site -->
+
+<script>
+
+async function chargerNomSite() {
+
+    try {
+
+        const reponse =
+            await fetch(
+                "/api/site-settings",
+                {
+                    cache:
+                        "no-store"
+                }
+            );
+
+
+        if (!reponse.ok) {
+            return;
+        }
+
+
+        const data =
+            await reponse.json();
+
+
+        const nom =
+            data.nomSite ||
+            "Origami Bijoux";
+
+
+        const logo =
+            document.getElementById(
+                "nom-site-header"
+            );
+
+
+        if (logo) {
+
+            logo.textContent =
+                nom;
+
+        }
+
+
+        document.title =
+            nom +
+            " - Paiement";
+
+
+    } catch (erreur) {
+
+        console.error(
+            "Nom du site :",
+            erreur
+        );
+
+    }
+
+}
+
+
+chargerNomSite();
+
+</script>
+
+
+</body>
+
+</html>
