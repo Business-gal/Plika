@@ -2513,12 +2513,10 @@ app.post(
 
                 ],
 
-                success_url:
-                    "http://localhost:3000/succes.html",
+                success_url: `${process.env.BASE_URL}/succes.html`,
 
-                cancel_url:
-                    "http://localhost:3000/index.html?paiement=annule",
-
+                cancel_url: `${process.env.BASE_URL}/index.html?paiement=annule`,
+				
                 billing_address_collection:
                     "auto"
 
