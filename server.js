@@ -2513,9 +2513,9 @@ app.post(
 
                 ],
 
-                success_url: `${process.env.BASE_URL}/succes.html`,
+                success_url:"https://plika.onrender.com/succes.html",
 
-                cancel_url: `${process.env.BASE_URL}/index.html?paiement=annule`,
+                cancel_url:"https://plika.onrender.com/index.html?paiement=annule",
 				
                 billing_address_collection:
                     "auto"
