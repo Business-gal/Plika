@@ -7,77 +7,39 @@ let produits = [];
 
 async function chargerProduits() {
     try {
-        const reponse =
-            await fetch(
-                "/api/products",
-                {
-                    cache:
-                        "no-store"
-                }
-            );
+        const reponse = await fetch("/api/products", {
+            cache: "no-store"
+        });
 
         if (!reponse.ok) {
-            throw new Error(
-                "Impossible de charger les produits."
-            );
+            throw new Error("Impossible de charger les produits.");
         }
 
-        const resultat =
-            await reponse.json();
+        const resultat = await reponse.json();
 
-        produits =
-            Array.isArray(resultat)
-                ? resultat
-                : [];
+        produits = Array.isArray(resultat) ? resultat : [];
 
-        produits =
-            produits.map(
-                produit => ({
-                    id:
-                        produit.id ||
-                        creerIdProduit(),
-
-                    nom:
-                        produit.nom ||
-                        "Nouveau produit",
-
-                    prix:
-                        Number(
-                            produit.prix || 0
-                        ),
-
-                    stock:
-                        Number(
-                            produit.stock || 0
-                        ),
-
-                    images:
-                        Array.isArray(
-                            produit.images
-                        )
-                            ? produit.images
-                            : []
-                })
-            );
+        produits = produits.map(produit => ({
+            id: produit.id || creerIdProduit(),
+            nom: produit.nom || "Nouveau produit",
+            prix: Number(produit.prix || 0),
+            stock: Number(produit.stock || 0),
+            images: Array.isArray(produit.images)
+                ? produit.images
+                : []
+        }));
 
         afficherProduits();
-    } catch (erreur) {
-        console.error(
-            "❌ Chargement produits :",
-            erreur
-        );
 
-        const liste =
-            document.getElementById(
-                "liste-produits"
-            );
+    } catch (erreur) {
+        console.error("❌ Chargement produits :", erreur);
+
+        const liste = document.getElementById("liste-produits");
 
         if (liste) {
             liste.innerHTML = `
                 <div class="info-admin">
-                    ❌ ${echapperAdmin(
-                        erreur.message
-                    )}
+                    ❌ ${echapperAdmin(erreur.message)}
                 </div>
             `;
         }
@@ -90,10 +52,7 @@ async function chargerProduits() {
 // ============================================================
 
 function afficherProduits() {
-    const liste =
-        document.getElementById(
-            "liste-produits"
-        );
+    const liste = document.getElementById("liste-produits");
 
     if (!liste) {
         return;
@@ -108,16 +67,9 @@ function afficherProduits() {
         return;
     }
 
-    liste.innerHTML =
-        produits
-            .map(
-                (produit, index) =>
-                    creerProduitHTML(
-                        produit,
-                        index
-                    )
-            )
-            .join("");
+    liste.innerHTML = produits
+        .map((produit, index) => creerProduitHTML(produit, index))
+        .join("");
 }
 
 
@@ -125,64 +77,46 @@ function afficherProduits() {
 // HTML PRODUIT
 // ============================================================
 
-function creerProduitHTML(
-    produit,
-    index
-) {
-    const images =
-        Array.isArray(
-            produit.images
-        )
-            ? produit.images
-            : [];
+function creerProduitHTML(produit, index) {
 
-    const photosHTML =
-        images.length > 0
-            ? images
-                .map(
-                    (
-                        image,
-                        photoIndex
-                    ) => `
-                        <div
-                            class="admin-photo"
-                        >
-                            <img
-                                src="${image}"
-                                alt="${echapperAdmin(
-                                    produit.nom
-                                )}"
-                            >
+    const images = Array.isArray(produit.images)
+        ? produit.images
+        : [];
 
-                            <button
-                                type="button"
-                                title="Supprimer"
-                                onclick="
-                                    supprimerPhoto(
-                                        ${index},
-                                        ${photoIndex}
-                                    )
-                                "
-                            >
-                                ×
-                            </button>
-                        </div>
-                    `
-                )
-                .join("")
-            : `
-                <div class="info-admin">
-                    Aucune photo.
+    const photosHTML = images.length > 0
+
+        ? images
+            .map((image, photoIndex) => `
+                <div class="admin-photo">
+
+                    <img
+                        src="${image}"
+                        alt="${echapperAdmin(produit.nom)}"
+                    >
+
+                    <button
+                        type="button"
+                        title="Supprimer"
+                        onclick="supprimerPhoto(${index}, ${photoIndex})"
+                    >
+                        ×
+                    </button>
+
                 </div>
-            `;
+            `)
+            .join("")
+
+        : `
+            <div class="info-admin">
+                Aucune photo.
+            </div>
+        `;
 
     return `
         <div class="admin-produit">
 
             <h2>
-                ${echapperAdmin(
-                    produit.nom
-                )}
+                ${echapperAdmin(produit.nom)}
             </h2>
 
             <div class="admin-photos">
@@ -196,16 +130,12 @@ function creerProduitHTML(
 
                     <input
                         type="text"
-                        value="${attributHTML(
-                            produit.nom
-                        )}"
-                        onchange="
-                            modifierProduit(
-                                ${index},
-                                'nom',
-                                this.value
-                            )
-                        "
+                        value="${attributHTML(produit.nom)}"
+                        onchange="modifierProduit(
+                            ${index},
+                            'nom',
+                            this.value
+                        )"
                     >
                 </div>
 
@@ -216,16 +146,12 @@ function creerProduitHTML(
                         type="number"
                         min="0"
                         step="0.01"
-                        value="${Number(
-                            produit.prix || 0
-                        )}"
-                        onchange="
-                            modifierProduit(
-                                ${index},
-                                'prix',
-                                this.value
-                            )
-                        "
+                        value="${Number(produit.prix || 0)}"
+                        onchange="modifierProduit(
+                            ${index},
+                            'prix',
+                            this.value
+                        )"
                     >
                 </div>
 
@@ -236,16 +162,12 @@ function creerProduitHTML(
                         type="number"
                         min="0"
                         step="1"
-                        value="${Number(
-                            produit.stock || 0
-                        )}"
-                        onchange="
-                            modifierProduit(
-                                ${index},
-                                'stock',
-                                this.value
-                            )
-                        "
+                        value="${Number(produit.stock || 0)}"
+                        onchange="modifierProduit(
+                            ${index},
+                            'stock',
+                            this.value
+                        )"
                     >
                 </div>
 
@@ -255,11 +177,7 @@ function creerProduitHTML(
 
                 <button
                     type="button"
-                    onclick="
-                        ajouterPhotos(
-                            ${index}
-                        )
-                    "
+                    onclick="ajouterPhotos(${index})"
                 >
                     📷 Ajouter des photos
                 </button>
@@ -267,11 +185,7 @@ function creerProduitHTML(
                 <button
                     type="button"
                     class="bouton-danger"
-                    onclick="
-                        supprimerProduit(
-                            ${index}
-                        )
-                    "
+                    onclick="supprimerProduit(${index})"
                 >
                     🗑️ Supprimer
                 </button>
@@ -287,38 +201,30 @@ function creerProduitHTML(
 // MODIFIER PRODUIT
 // ============================================================
 
-function modifierProduit(
-    index,
-    champ,
-    valeur
-) {
+function modifierProduit(index, champ, valeur) {
+
     if (!produits[index]) {
         return;
     }
 
     if (champ === "nom") {
         produits[index].nom =
-            String(
-                valeur
-            ).trim() ||
-            "Produit sans nom";
+            String(valeur).trim() || "Produit sans nom";
     }
 
     if (champ === "prix") {
         produits[index].prix =
-            Number(
-                valeur
-            ) || 0;
+            Number(valeur) || 0;
     }
 
     if (champ === "stock") {
         produits[index].stock =
-            Math.max(
-                0,
-                Number(
-                    valeur
-                ) || 0
-            );
+            Number(valeur);
+
+        console.log(
+            "Stock modifié :",
+            produits[index].stock
+        );
     }
 }
 
@@ -328,72 +234,49 @@ function modifierProduit(
 // ============================================================
 
 function ajouterPhotos(index) {
+
     if (!produits[index]) {
         return;
     }
 
-    const input =
-        document.createElement(
-            "input"
-        );
+    const input = document.createElement("input");
 
-    input.type =
-        "file";
+    input.type = "file";
+    input.accept = "image/*";
+    input.multiple = true;
+    input.style.display = "none";
 
-    input.accept =
-        "image/*";
+    document.body.appendChild(input);
 
-    input.multiple =
-        true;
+    input.onchange = async () => {
 
-    input.style.display =
-        "none";
+        const fichiers =
+            Array.from(input.files || []);
 
-    document.body.appendChild(
-        input
-    );
+        if (!Array.isArray(produits[index].images)) {
+            produits[index].images = [];
+        }
 
-    input.onchange =
-        async () => {
-            const fichiers =
-                Array.from(
-                    input.files || []
-                );
+        for (const fichier of fichiers) {
 
-            if (
-                !Array.isArray(
-                    produits[index].images
-                )
-            ) {
-                produits[index].images =
-                    [];
+            try {
+
+                const image =
+                    await lireFichier(fichier);
+
+                produits[index].images.push(image);
+
+            } catch (erreur) {
+
+                console.error(erreur);
+
             }
+        }
 
-            for (
-                const fichier of fichiers
-            ) {
-                try {
-                    const image =
-                        await lireFichier(
-                            fichier
-                        );
+        input.remove();
 
-                    produits[index]
-                        .images
-                        .push(
-                            image
-                        );
-                } catch (erreur) {
-                    console.error(
-                        erreur
-                    );
-                }
-            }
-
-            input.remove();
-
-            afficherProduits();
-        };
+        afficherProduits();
+    };
 
     input.click();
 }
@@ -403,38 +286,24 @@ function ajouterPhotos(index) {
 // LIRE IMAGE
 // ============================================================
 
-function lireFichier(
-    fichier
-) {
-    return new Promise(
-        (
-            resolve,
-            reject
-        ) => {
-            const lecteur =
-                new FileReader();
+function lireFichier(fichier) {
 
-            lecteur.onload =
-                () => {
-                    resolve(
-                        lecteur.result
-                    );
-                };
+    return new Promise((resolve, reject) => {
 
-            lecteur.onerror =
-                () => {
-                    reject(
-                        new Error(
-                            "Impossible de lire l'image."
-                        )
-                    );
-                };
+        const lecteur = new FileReader();
 
-            lecteur.readAsDataURL(
-                fichier
+        lecteur.onload = () => {
+            resolve(lecteur.result);
+        };
+
+        lecteur.onerror = () => {
+            reject(
+                new Error("Impossible de lire l'image.")
             );
-        }
-    );
+        };
+
+        lecteur.readAsDataURL(fichier);
+    });
 }
 
 
@@ -446,21 +315,18 @@ function supprimerPhoto(
     produitIndex,
     photoIndex
 ) {
+
     if (
         !produits[produitIndex] ||
-        !Array.isArray(
-            produits[produitIndex].images
-        )
+        !Array.isArray(produits[produitIndex].images)
     ) {
         return;
     }
 
-    produits[produitIndex]
-        .images
-        .splice(
-            photoIndex,
-            1
-        );
+    produits[produitIndex].images.splice(
+        photoIndex,
+        1
+    );
 
     afficherProduits();
 }
@@ -471,31 +337,26 @@ function supprimerPhoto(
 // ============================================================
 
 function ajouterProduit() {
+
     produits.push({
-        id:
-            creerIdProduit(),
 
-        nom:
-            "Nouveau produit",
+        id: creerIdProduit(),
 
-        prix:
-            0,
+        nom: "Nouveau produit",
 
-        stock:
-            0,
+        prix: 0,
 
-        images:
-            []
+        stock: 0,
+
+        images: []
+
     });
 
     afficherProduits();
 
     window.scrollTo({
-        top:
-            document.body.scrollHeight,
-
-        behavior:
-            "smooth"
+        top: document.body.scrollHeight,
+        behavior: "smooth"
     });
 }
 
@@ -504,9 +365,8 @@ function ajouterProduit() {
 // SUPPRIMER PRODUIT
 // ============================================================
 
-function supprimerProduit(
-    index
-) {
+function supprimerProduit(index) {
+
     if (!produits[index]) {
         return;
     }
@@ -519,10 +379,7 @@ function supprimerProduit(
         return;
     }
 
-    produits.splice(
-        index,
-        1
-    );
+    produits.splice(index, 1);
 
     afficherProduits();
 }
@@ -533,51 +390,64 @@ function supprimerProduit(
 // ============================================================
 
 async function sauvegarderProduits() {
+
+    // Message immédiat
+    afficherMessageAdmin(
+        "⏳ Enregistrement en cours..."
+    );
+
     try {
-        const reponse =
-            await fetch(
-                "/api/admin/sync-products",
-                {
-                    method:
-                        "POST",
 
-                    credentials:
-                        "same-origin",
+        console.log(
+            "💾 Sauvegarde des produits...",
+            produits
+        );
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+        const reponse = await fetch(
+            "/api/admin/sync-products",
+            {
+                method: "POST",
 
-                    body:
-                        JSON.stringify({
-                            produits:
-                                produits
-                        })
-                }
-            );
+                credentials: "same-origin",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    produits: produits
+                })
+            }
+        );
 
         const resultat =
             await reponse.json();
 
         if (!reponse.ok) {
+
             throw new Error(
                 resultat.erreur ||
                 "Impossible d'enregistrer les produits."
             );
         }
 
+        console.log(
+            "✅ Produits sauvegardés."
+        );
+
         afficherMessageAdmin(
             "✅ Produits enregistrés."
         );
+
     } catch (erreur) {
+
         console.error(
+            "❌ Erreur sauvegarde produits :",
             erreur
         );
 
         afficherMessageAdmin(
-            "❌ " +
-            erreur.message,
+            "❌ " + erreur.message,
             true
         );
     }
@@ -589,23 +459,22 @@ async function sauvegarderProduits() {
 // ============================================================
 
 async function chargerPersonnalisation() {
-    try {
-        const reponse =
-            await fetch(
-                "/api/admin/settings",
-                {
-                    credentials:
-                        "same-origin",
 
-                    cache:
-                        "no-store"
-                }
-            );
+    try {
+
+        const reponse = await fetch(
+            "/api/admin/settings",
+            {
+                credentials: "same-origin",
+                cache: "no-store"
+            }
+        );
 
         const resultat =
             await reponse.json();
 
         if (!reponse.ok) {
+
             throw new Error(
                 resultat.erreur ||
                 "Impossible de charger les réglages."
@@ -613,19 +482,13 @@ async function chargerPersonnalisation() {
         }
 
         const nom =
-            document.getElementById(
-                "nom-site"
-            );
+            document.getElementById("nom-site");
 
         const titre =
-            document.getElementById(
-                "titre-accueil"
-            );
+            document.getElementById("titre-accueil");
 
         const texte =
-            document.getElementById(
-                "texte-accueil"
-            );
+            document.getElementById("texte-accueil");
 
         if (nom) {
             nom.value =
@@ -644,7 +507,9 @@ async function chargerPersonnalisation() {
                 resultat.texteAccueil ||
                 "";
         }
+
     } catch (erreur) {
+
         console.error(
             "❌ Chargement personnalisation :",
             erreur
@@ -663,91 +528,71 @@ async function chargerPersonnalisation() {
 // ============================================================
 
 async function sauvegarderPersonnalisation() {
+
     const nom =
-        document.getElementById(
-            "nom-site"
-        )?.value
-            .trim() ||
+        document.getElementById("nom-site")?.value.trim() ||
         "Origami Bijoux";
 
     const titre =
-        document.getElementById(
-            "titre-accueil"
-        )?.value
-            .trim() ||
+        document.getElementById("titre-accueil")?.value.trim() ||
         "";
 
     const texte =
-        document.getElementById(
-            "texte-accueil"
-        )?.value
-            .trim() ||
+        document.getElementById("texte-accueil")?.value.trim() ||
         "";
 
     try {
-        const lecture =
-            await fetch(
-                "/api/admin/settings",
-                {
-                    credentials:
-                        "same-origin",
 
-                    cache:
-                        "no-store"
-                }
-            );
+        const lecture = await fetch(
+            "/api/admin/settings",
+            {
+                credentials: "same-origin",
+                cache: "no-store"
+            }
+        );
 
         const anciens =
             lecture.ok
                 ? await lecture.json()
                 : {};
 
-        const reponse =
-            await fetch(
-                "/api/admin/settings",
-                {
-                    method:
-                        "POST",
+        const reponse = await fetch(
+            "/api/admin/settings",
+            {
+                method: "POST",
 
-                    credentials:
-                        "same-origin",
+                credentials: "same-origin",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    body:
-                        JSON.stringify({
+                body: JSON.stringify({
 
-                            nomSite:
-                                nom,
+                    nomSite: nom,
 
-                            titreAccueil:
-                                titre,
+                    titreAccueil: titre,
 
-                            texteAccueil:
-                                texte,
+                    texteAccueil: texte,
 
-                            prixPointRelais:
-                                Number(
-                                    anciens.prixPointRelais ??
-                                    3
-                                ),
+                    prixPointRelais:
+                        Number(
+                            anciens.prixPointRelais ?? 3
+                        ),
 
-                            prixDomicile:
-                                Number(
-                                    anciens.prixDomicile ??
-                                    5
-                                )
-                        })
-                }
-            );
+                    prixDomicile:
+                        Number(
+                            anciens.prixDomicile ?? 5
+                        )
+                })
+            }
+        );
 
         const resultat =
             await reponse.json();
 
         if (!reponse.ok) {
+
             throw new Error(
                 resultat.erreur ||
                 "Impossible d'enregistrer les réglages."
@@ -757,15 +602,16 @@ async function sauvegarderPersonnalisation() {
         afficherMessageAdmin(
             "✅ Administration du site enregistrée."
         );
+
     } catch (erreur) {
+
         console.error(
             "❌ Sauvegarde réglages :",
             erreur
         );
 
         afficherMessageAdmin(
-            "❌ " +
-            erreur.message,
+            "❌ " + erreur.message,
             true
         );
     }
@@ -777,18 +623,16 @@ async function sauvegarderPersonnalisation() {
 // ============================================================
 
 async function chargerReglagesLivraison() {
-    try {
-        const reponse =
-            await fetch(
-                "/api/admin/settings",
-                {
-                    credentials:
-                        "same-origin",
 
-                    cache:
-                        "no-store"
-                }
-            );
+    try {
+
+        const reponse = await fetch(
+            "/api/admin/settings",
+            {
+                credentials: "same-origin",
+                cache: "no-store"
+            }
+        );
 
         if (!reponse.ok) {
             return;
@@ -808,24 +652,24 @@ async function chargerReglagesLivraison() {
             );
 
         if (relais) {
+
             relais.value =
                 Number(
-                    reglages.prixPointRelais ??
-                    3
+                    reglages.prixPointRelais ?? 3
                 );
         }
 
         if (domicile) {
+
             domicile.value =
                 Number(
-                    reglages.prixDomicile ??
-                    5
+                    reglages.prixDomicile ?? 5
                 );
         }
+
     } catch (erreur) {
-        console.error(
-            erreur
-        );
+
+        console.error(erreur);
     }
 }
 
@@ -835,18 +679,16 @@ async function chargerReglagesLivraison() {
 // ============================================================
 
 async function sauvegarderLivraison() {
-    try {
-        const lecture =
-            await fetch(
-                "/api/admin/settings",
-                {
-                    credentials:
-                        "same-origin",
 
-                    cache:
-                        "no-store"
-                }
-            );
+    try {
+
+        const lecture = await fetch(
+            "/api/admin/settings",
+            {
+                credentials: "same-origin",
+                cache: "no-store"
+            }
+        );
 
         const anciens =
             lecture.ok
@@ -857,61 +699,55 @@ async function sauvegarderLivraison() {
             Number(
                 document.getElementById(
                     "prix-point-relais"
-                )?.value ||
-                0
+                )?.value || 0
             );
 
         const domicile =
             Number(
                 document.getElementById(
                     "prix-domicile"
-                )?.value ||
-                0
+                )?.value || 0
             );
 
-        const reponse =
-            await fetch(
-                "/api/admin/settings",
-                {
-                    method:
-                        "POST",
+        const reponse = await fetch(
+            "/api/admin/settings",
+            {
+                method: "POST",
 
-                    credentials:
-                        "same-origin",
+                credentials: "same-origin",
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+                headers: {
+                    "Content-Type": "application/json"
+                },
 
-                    body:
-                        JSON.stringify({
+                body: JSON.stringify({
 
-                            nomSite:
-                                anciens.nomSite ||
-                                "Origami Bijoux",
+                    nomSite:
+                        anciens.nomSite ||
+                        "Origami Bijoux",
 
-                            titreAccueil:
-                                anciens.titreAccueil ||
-                                "",
+                    titreAccueil:
+                        anciens.titreAccueil ||
+                        "",
 
-                            texteAccueil:
-                                anciens.texteAccueil ||
-                                "",
+                    texteAccueil:
+                        anciens.texteAccueil ||
+                        "",
 
-                            prixPointRelais:
-                                relais,
+                    prixPointRelais:
+                        relais,
 
-                            prixDomicile:
-                                domicile
-                        })
-                }
-            );
+                    prixDomicile:
+                        domicile
+                })
+            }
+        );
 
         const resultat =
             await reponse.json();
 
         if (!reponse.ok) {
+
             throw new Error(
                 resultat.erreur ||
                 "Impossible d'enregistrer les tarifs."
@@ -921,10 +757,11 @@ async function sauvegarderLivraison() {
         afficherMessageAdmin(
             "✅ Tarifs de livraison enregistrés."
         );
+
     } catch (erreur) {
+
         afficherMessageAdmin(
-            "❌ " +
-            erreur.message,
+            "❌ " + erreur.message,
             true
         );
     }
@@ -932,19 +769,21 @@ async function sauvegarderLivraison() {
 
 
 // ============================================================
-// MESSAGE
+// MESSAGE ADMIN
 // ============================================================
 
 function afficherMessageAdmin(
     message,
     erreur = false
 ) {
+
     let element =
         document.getElementById(
             "message-admin"
         );
 
     if (!element) {
+
         element =
             document.createElement(
                 "div"
@@ -1007,8 +846,10 @@ function afficherMessageAdmin(
     element._timer =
         setTimeout(
             () => {
+
                 element.style.display =
                     "none";
+
             },
             4000
         );
@@ -1020,6 +861,7 @@ function afficherMessageAdmin(
 // ============================================================
 
 function creerIdProduit() {
+
     return (
         "prod_" +
         Date.now().toString(36) +
@@ -1030,56 +872,29 @@ function creerIdProduit() {
     );
 }
 
-function echapperAdmin(
-    texte
-) {
+
+function echapperAdmin(texte) {
+
     return String(
         texte ?? ""
     )
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
 }
 
-function attributHTML(
-    texte
-) {
+
+function attributHTML(texte) {
+
     return String(
         texte ?? ""
     )
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        );
+        .replace(/&/g, "&amp;")
+        .replace(/"/g, "&quot;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;");
 }
 
 
@@ -1097,5 +912,31 @@ document.addEventListener(
 
         await chargerReglagesLivraison();
 
+    }
+);
+
+
+// ============================================================
+// BOUTON ENREGISTRER LES PRODUITS
+// ============================================================
+
+document.addEventListener(
+    "click",
+    event => {
+
+        const bouton =
+            event.target.closest(
+                "#bouton-enregistrer-produits"
+            );
+
+        if (!bouton) {
+            return;
+        }
+
+        console.log(
+            "🖱️ Clic sur Enregistrer les produits"
+        );
+
+        sauvegarderProduits();
     }
 );
