@@ -1,18 +1,53 @@
+// ============================================================
+// PLiKA - SERVEUR
+// ============================================================
+
+require("dotenv").config();
+
 const express = require("express");
 const session = require("express-session");
-const dotenv = require("dotenv");
 const path = require("path");
 const fs = require("fs");
 const Stripe = require("stripe");
 const nodemailer = require("nodemailer");
+const { createClient } = require("@supabase/supabase-js");
 
-dotenv.config();
-
-const app = express();
-const PORT = process.env.PORT || 3000;
 
 // ============================================================
-// VARIABLES ENV
+// SUPABASE
+// ============================================================
+
+if (
+    !process.env.SUPABASE_URL ||
+    !process.env.SUPABASE_SERVICE_ROLE_KEY
+) {
+    console.error(
+        "❌ SUPABASE_URL ou SUPABASE_SERVICE_ROLE_KEY manque."
+    );
+
+    process.exit(1);
+}
+
+const supabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+);
+
+console.log("✅ Supabase configuré.");
+
+
+// ============================================================
+// EXPRESS
+// ============================================================
+
+const app = express();
+
+const PORT =
+    process.env.PORT || 3000;
+
+
+// ============================================================
+// VARIABLES OBLIGATOIRES
 // ============================================================
 
 const variablesObligatoires = [
@@ -22,7 +57,10 @@ const variablesObligatoires = [
     "STRIPE_WEBHOOK_SECRET"
 ];
 
-for (const variable of variablesObligatoires) {
+for (
+    const variable
+    of variablesObligatoires
+) {
 
     if (!process.env[variable]) {
 
@@ -96,7 +134,6 @@ if (
     console.log(
         "⚠️ Service email non configuré."
     );
-
 }
 
 
@@ -151,7 +188,6 @@ function lireJSON(
         return valeurParDefaut;
     }
 
-
     try {
 
         return JSON.parse(
@@ -174,33 +210,280 @@ function lireJSON(
 
 
 // ============================================================
-// PRODUITS
+// PRODUITS - SUPABASE
 // ============================================================
 
-function lireProduits() {
+async function lireProduits() {
 
-    return lireJSON(
-        PRODUCTS_FILE,
-        []
-    );
+    const {
+        data,
+        error
+    } = await supabase
+        .from("produits")
+        .select("id, nom, prix, stock, images");
 
+    if (error) {
+
+        console.error(
+            "❌ Erreur lecture Supabase :",
+            error
+        );
+
+        throw error;
+    }
+
+    const produits =
+        Array.isArray(data)
+            ? data.map(produit => ({
+
+                id:
+                    String(
+                        produit.id
+                    ),
+
+                nom:
+                    produit.nom ||
+                    "Nouveau produit",
+
+                prix:
+                    Number(
+                        produit.prix || 0
+                    ),
+
+                stock:
+                    Number(
+                        produit.stock || 0
+                    ),
+
+                images:
+                    Array.isArray(
+                        produit.images
+                    )
+                        ? produit.images
+                        : []
+
+            }))
+            : [];
+
+
+    // --------------------------------------------------------
+    // MIGRATION AUTOMATIQUE DE products.json
+    // --------------------------------------------------------
+
+    if (
+        produits.length === 0 &&
+        fs.existsSync(PRODUCTS_FILE)
+    ) {
+
+        const anciensProduits =
+            lireJSON(
+                PRODUCTS_FILE,
+                []
+            );
+
+        if (
+            Array.isArray(
+                anciensProduits
+            ) &&
+            anciensProduits.length > 0
+        ) {
+
+            console.log(
+                "📦 Migration des anciens produits vers Supabase..."
+            );
+
+            await sauvegarderProduits(
+                anciensProduits
+            );
+
+            return anciensProduits;
+        }
+    }
+
+    return produits;
 }
 
 
-function sauvegarderProduits(
+// ============================================================
+// SAUVEGARDER PRODUITS - SUPABASE
+// ============================================================
+
+async function sauvegarderProduits(
     produits
 ) {
 
-    fs.writeFileSync(
-        PRODUCTS_FILE,
-        JSON.stringify(
-            produits,
-            null,
-            4
-        ),
-        "utf8"
-    );
+    if (
+        !Array.isArray(
+            produits
+        )
+    ) {
 
+        throw new Error(
+            "Produits invalides."
+        );
+    }
+
+
+    const produitsNettoyes =
+        produits.map(
+            produit => ({
+
+                id:
+                    String(
+                        produit.id
+                    ),
+
+                nom:
+                    String(
+                        produit.nom ||
+                        "Produit sans nom"
+                    ),
+
+                prix:
+                    Number(
+                        produit.prix || 0
+                    ),
+
+                stock:
+                    Number(
+                        produit.stock || 0
+                    ),
+
+                images:
+                    Array.isArray(
+                        produit.images
+                    )
+                        ? produit.images
+                        : []
+
+            })
+        );
+
+
+    // --------------------------------------------------------
+    // ENVOI / MISE À JOUR
+    // --------------------------------------------------------
+
+    if (
+        produitsNettoyes.length > 0
+    ) {
+
+        const {
+            error
+        } = await supabase
+            .from("produits")
+            .upsert(
+                produitsNettoyes,
+                {
+                    onConflict:
+                        "id"
+                }
+            );
+
+        if (error) {
+
+            console.error(
+                "❌ Erreur sauvegarde Supabase :",
+                error
+            );
+
+            throw error;
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // SUPPRESSION DES PRODUITS SUPPRIMÉS DE L'ADMIN
+    // --------------------------------------------------------
+
+    const {
+        data: produitsExistants,
+        error: erreurLecture
+    } = await supabase
+        .from("produits")
+        .select("id");
+
+    if (erreurLecture) {
+
+        throw erreurLecture;
+    }
+
+
+    const idsActuels =
+        produitsNettoyes.map(
+            produit =>
+                String(
+                    produit.id
+                )
+        );
+
+
+    const idsASupprimer =
+        (produitsExistants || [])
+            .map(
+                produit =>
+                    String(
+                        produit.id
+                    )
+            )
+            .filter(
+                id =>
+                    !idsActuels.includes(
+                        id
+                    )
+            );
+
+
+    for (
+        const id
+        of idsASupprimer
+    ) {
+
+        const {
+            error
+        } = await supabase
+            .from("produits")
+            .delete()
+            .eq(
+                "id",
+                id
+            );
+
+        if (error) {
+
+            throw error;
+        }
+    }
+
+
+    // --------------------------------------------------------
+    // COPIE LOCALE DE SECOURS
+    // --------------------------------------------------------
+
+    try {
+
+        fs.writeFileSync(
+            PRODUCTS_FILE,
+            JSON.stringify(
+                produitsNettoyes,
+                null,
+                4
+            ),
+            "utf8"
+        );
+
+    } catch (erreur) {
+
+        console.warn(
+            "⚠️ Impossible d'écrire products.json :",
+            erreur.message
+        );
+    }
+
+
+    console.log(
+        `✅ ${produitsNettoyes.length} produit(s) sauvegardé(s) dans Supabase.`
+    );
 }
 
 
@@ -218,9 +501,7 @@ function lireCommandes() {
 
 
     if (
-        Array.isArray(
-            commandes
-        ) &&
+        Array.isArray(commandes) &&
         commandes.every(
             commande =>
                 typeof commande ===
@@ -237,7 +518,6 @@ function lireCommandes() {
     )
         ? commandes
         : [];
-
 }
 
 
@@ -254,12 +534,11 @@ function sauvegarderCommandes(
         ),
         "utf8"
     );
-
 }
 
 
 // ============================================================
-// RÉGLAGES DU SITE
+// RÉGLAGES
 // ============================================================
 
 function reglagesParDefaut() {
@@ -282,7 +561,6 @@ function reglagesParDefaut() {
             5
 
     };
-
 }
 
 
@@ -304,20 +582,17 @@ function lireReglages() {
                 ? anciens.nomSite.trim()
                 : "Origami Bijoux",
 
-
         titreAccueil:
             typeof anciens.titreAccueil ===
             "string"
                 ? anciens.titreAccueil
                 : "",
 
-
         texteAccueil:
             typeof anciens.texteAccueil ===
             "string"
                 ? anciens.texteAccueil
                 : "",
-
 
         prixPointRelais:
             Number.isFinite(
@@ -329,7 +604,6 @@ function lireReglages() {
                     anciens.prixPointRelais
                 )
                 : 3,
-
 
         prixDomicile:
             Number.isFinite(
@@ -343,7 +617,6 @@ function lireReglages() {
                 : 5
 
     };
-
 }
 
 
@@ -360,12 +633,11 @@ function sauvegarderReglages(
         ),
         "utf8"
     );
-
 }
 
 
 // ============================================================
-// OUTILS TEXTE
+// TEXTE
 // ============================================================
 
 function normaliserTexte(
@@ -382,7 +654,6 @@ function normaliserTexte(
         )
         .toLowerCase()
         .trim();
-
 }
 
 
@@ -417,7 +688,6 @@ function echapperEmail(
             /'/g,
             "&#039;"
         );
-
 }
 
 
@@ -464,17 +734,14 @@ async function envoyerEmailsCommande(
                             1
                         );
 
-
                     return `
 
                         <tr>
 
-                            <td
-                                style="
-                                    padding:8px 0;
-                                    border-bottom:1px solid #eee;
-                                "
-                            >
+                            <td style="
+                                padding:8px 0;
+                                border-bottom:1px solid #eee;
+                            ">
 
                                 ${echapperEmail(
                                     article.nom ||
@@ -484,14 +751,11 @@ async function envoyerEmailsCommande(
 
                             </td>
 
-
-                            <td
-                                style="
-                                    padding:8px 0;
-                                    text-align:right;
-                                    border-bottom:1px solid #eee;
-                                "
-                            >
+                            <td style="
+                                padding:8px 0;
+                                text-align:right;
+                                border-bottom:1px solid #eee;
+                            ">
 
                                 × ${quantite}
 
@@ -500,7 +764,6 @@ async function envoyerEmailsCommande(
                         </tr>
 
                     `;
-
                 }
             )
             .join("");
@@ -511,7 +774,7 @@ async function envoyerEmailsCommande(
 
     if (
         commande.livraison?.mode ===
-            "retrait" &&
+        "retrait" &&
         commande.livraison.pointRetrait
     ) {
 
@@ -521,19 +784,16 @@ async function envoyerEmailsCommande(
 
         livraisonHTML = `
 
-            <div
-                style="
-                    background:#f7f7f7;
-                    border-radius:10px;
-                    padding:15px;
-                    margin-top:20px;
-                "
-            >
+            <div style="
+                background:#f7f7f7;
+                border-radius:10px;
+                padding:15px;
+                margin-top:20px;
+            ">
 
                 <strong>
                     📍 Point de retrait
                 </strong>
-
 
                 <p>
 
@@ -580,14 +840,12 @@ async function envoyerEmailsCommande(
 
         livraisonHTML = `
 
-            <div
-                style="
-                    background:#f7f7f7;
-                    border-radius:10px;
-                    padding:15px;
-                    margin-top:20px;
-                "
-            >
+            <div style="
+                background:#f7f7f7;
+                border-radius:10px;
+                padding:15px;
+                margin-top:20px;
+            ">
 
                 <strong>
                     🏠 Livraison à domicile
@@ -596,7 +854,6 @@ async function envoyerEmailsCommande(
             </div>
 
         `;
-
     }
 
 
@@ -606,24 +863,20 @@ async function envoyerEmailsCommande(
 
         <html lang="fr">
 
-        <body
-            style="
-                margin:0;
-                padding:20px;
-                background:#f6f6f6;
-                font-family:Arial,sans-serif;
-            "
-        >
+        <body style="
+            margin:0;
+            padding:20px;
+            background:#f6f6f6;
+            font-family:Arial,sans-serif;
+        ">
 
-            <div
-                style="
-                    max-width:600px;
-                    margin:auto;
-                    background:white;
-                    padding:30px;
-                    border-radius:16px;
-                "
-            >
+            <div style="
+                max-width:600px;
+                margin:auto;
+                background:white;
+                padding:30px;
+                border-radius:16px;
+            ">
 
                 <h1>
                     ${echapperEmail(
@@ -631,11 +884,9 @@ async function envoyerEmailsCommande(
                     )}
                 </h1>
 
-
                 <h2>
                     Merci pour votre commande !
                 </h2>
-
 
                 <p>
 
@@ -647,34 +898,26 @@ async function envoyerEmailsCommande(
 
                 </p>
 
-
                 <h3>
                     Votre commande
                 </h3>
 
-
-                <table
-                    style="
-                        width:100%;
-                        border-collapse:collapse;
-                    "
-                >
+                <table style="
+                    width:100%;
+                    border-collapse:collapse;
+                ">
 
                     ${produitsHTML}
 
                 </table>
 
-
                 ${livraisonHTML}
 
-
-                <p
-                    style="
-                        text-align:right;
-                        font-size:20px;
-                        font-weight:bold;
-                    "
-                >
+                <p style="
+                    text-align:right;
+                    font-size:20px;
+                    font-weight:bold;
+                ">
 
                     Total :
 
@@ -707,21 +950,17 @@ async function envoyerEmailsCommande(
 
         <html lang="fr">
 
-        <body
-            style="
-                font-family:Arial,sans-serif;
-            "
-        >
+        <body style="
+            font-family:Arial,sans-serif;
+        ">
 
             <h1>
                 📦 Nouvelle commande
             </h1>
 
-
             <h2>
                 ${numeroCommande}
             </h2>
-
 
             <p>
 
@@ -735,7 +974,6 @@ async function envoyerEmailsCommande(
                 )}
 
             </p>
-
 
             <p>
 
@@ -757,21 +995,16 @@ async function envoyerEmailsCommande(
 
             </p>
 
-
             ${livraisonHTML}
-
 
             <h3>
                 Produits
             </h3>
 
-
-            <table
-                style="
-                    width:100%;
-                    border-collapse:collapse;
-                "
-            >
+            <table style="
+                width:100%;
+                border-collapse:collapse;
+            ">
 
                 ${produitsHTML}
 
@@ -806,7 +1039,6 @@ async function envoyerEmailsCommande(
 
             });
 
-
             console.log(
                 "✅ Email client envoyé."
             );
@@ -817,9 +1049,7 @@ async function envoyerEmailsCommande(
                 "❌ Erreur email client :",
                 erreur.message
             );
-
         }
-
     }
 
 
@@ -841,7 +1071,6 @@ async function envoyerEmailsCommande(
 
         });
 
-
         console.log(
             "✅ Email administrateur envoyé."
         );
@@ -852,9 +1081,7 @@ async function envoyerEmailsCommande(
             "❌ Erreur email administrateur :",
             erreur.message
         );
-
     }
-
 }
 
 
@@ -899,7 +1126,6 @@ app.post(
             return res.sendStatus(
                 400
             );
-
         }
 
 
@@ -913,7 +1139,6 @@ app.post(
                 await traiterPaiement(
                     event.data.object
                 );
-
             }
 
 
@@ -931,9 +1156,7 @@ app.post(
             res.sendStatus(
                 500
             );
-
         }
-
     }
 );
 
@@ -974,7 +1197,6 @@ async function traiterPaiement(
         throw new Error(
             "Panier absent des metadata Stripe."
         );
-
     }
 
 
@@ -993,7 +1215,6 @@ async function traiterPaiement(
         throw new Error(
             "Panier invalide."
         );
-
     }
 
 
@@ -1007,19 +1228,22 @@ async function traiterPaiement(
         throw new Error(
             "Panier vide."
         );
-
     }
 
 
+    // IMPORTANT :
+    // Les produits viennent maintenant de Supabase
+
     const produits =
-        lireProduits();
+        await lireProduits();
 
 
     const quantites = {};
 
 
     for (
-        const article of panier
+        const article
+        of panier
     ) {
 
         const id =
@@ -1044,7 +1268,6 @@ async function traiterPaiement(
             throw new Error(
                 "Quantité invalide."
             );
-
         }
 
 
@@ -1054,9 +1277,12 @@ async function traiterPaiement(
                 0
             ) +
             quantite;
-
     }
 
+
+    // --------------------------------------------------------
+    // VÉRIFICATION STOCK
+    // --------------------------------------------------------
 
     for (
         const [id, quantite]
@@ -1068,7 +1294,8 @@ async function traiterPaiement(
         const produit =
             produits.find(
                 p =>
-                    p.id === id
+                    String(p.id) ===
+                    String(id)
             );
 
 
@@ -1077,7 +1304,6 @@ async function traiterPaiement(
             throw new Error(
                 `Produit introuvable : ${id}`
             );
-
         }
 
 
@@ -1091,11 +1317,13 @@ async function traiterPaiement(
             throw new Error(
                 `Stock insuffisant pour ${produit.nom}`
             );
-
         }
-
     }
 
+
+    // --------------------------------------------------------
+    // DÉCRÉMENTATION STOCK
+    // --------------------------------------------------------
 
     for (
         const [id, quantite]
@@ -1107,20 +1335,28 @@ async function traiterPaiement(
         const produit =
             produits.find(
                 p =>
-                    p.id === id
+                    String(p.id) ===
+                    String(id)
             );
 
 
         produit.stock -=
             quantite;
-
     }
 
 
-    sauvegarderProduits(
+    // --------------------------------------------------------
+    // SAUVEGARDE SUPABASE
+    // --------------------------------------------------------
+
+    await sauvegarderProduits(
         produits
     );
 
+
+    // --------------------------------------------------------
+    // LIVRAISON
+    // --------------------------------------------------------
 
     let livraison = null;
 
@@ -1139,11 +1375,13 @@ async function traiterPaiement(
         } catch {
 
             livraison = null;
-
         }
-
     }
 
+
+    // --------------------------------------------------------
+    // COMMANDE
+    // --------------------------------------------------------
 
     const commande = {
 
@@ -1165,8 +1403,7 @@ async function traiterPaiement(
 
         total:
             sessionStripe.amount_total
-                ? sessionStripe.amount_total /
-                  100
+                ? sessionStripe.amount_total / 100
                 : 0,
 
         devise:
@@ -1186,7 +1423,6 @@ async function traiterPaiement(
 
         archivee:
             false
-
     };
 
 
@@ -1206,7 +1442,7 @@ async function traiterPaiement(
     );
 
     console.log(
-        "📦 Stock mis à jour."
+        "📦 Stock mis à jour dans Supabase."
     );
 
     console.log(
@@ -1217,7 +1453,6 @@ async function traiterPaiement(
     await envoyerEmailsCommande(
         commande
     );
-
 }
 
 
@@ -1276,9 +1511,7 @@ app.use(
                 60 *
                 60 *
                 8
-
         }
-
     })
 );
 
@@ -1297,7 +1530,6 @@ app.get(
                 "connexion.html"
             )
         );
-
     }
 );
 
@@ -1325,14 +1557,12 @@ app.post(
             return res.redirect(
                 "/admin.html"
             );
-
         }
 
 
         res.redirect(
             "/connexion.html?erreur=1"
         );
-
     }
 );
 
@@ -1353,7 +1583,6 @@ app.get(
             return res.redirect(
                 "/connexion.html"
             );
-
         }
 
 
@@ -1363,7 +1592,6 @@ app.get(
                 "admin.html"
             )
         );
-
     }
 );
 
@@ -1381,7 +1609,6 @@ app.get(
 
             }
         );
-
     }
 );
 
@@ -1392,15 +1619,24 @@ app.get(
 
 app.get(
     "/api/products",
-    (req, res) => {
+    async (req, res) => {
 
         try {
 
+            const produits =
+                await lireProduits();
+
+
             res.json(
-                lireProduits()
+                produits
             );
 
-        } catch {
+        } catch (erreur) {
+
+            console.error(
+                "❌ Chargement produits :",
+                erreur
+            );
 
             res.status(
                 500
@@ -1410,9 +1646,7 @@ app.get(
                     "Impossible de charger les produits."
 
             });
-
         }
-
     }
 );
 
@@ -1423,7 +1657,7 @@ app.get(
 
 app.post(
     "/api/admin/sync-products",
-    (req, res) => {
+    async (req, res) => {
 
         if (
             req.session.adminConnecte !==
@@ -1438,7 +1672,6 @@ app.post(
                     "Non autorisé."
 
             });
-
         }
 
 
@@ -1462,23 +1695,25 @@ app.post(
                         "Produits invalides."
 
                 });
-
             }
 
 
-            sauvegarderProduits(
+            await sauvegarderProduits(
                 produits
             );
 
 
             res.json({
+
                 ok:
                     true
+
             });
 
         } catch (erreur) {
 
             console.error(
+                "❌ Erreur sauvegarde produits :",
                 erreur
             );
 
@@ -1491,15 +1726,13 @@ app.post(
                     "Impossible de sauvegarder les produits."
 
             });
-
         }
-
     }
 );
 
 
 // ============================================================
-// ADMIN RÉGLAGES
+// RÉGLAGES ADMIN
 // ============================================================
 
 app.get(
@@ -1519,14 +1752,12 @@ app.get(
                     "Non autorisé."
 
             });
-
         }
 
 
         res.json(
             lireReglages()
         );
-
     }
 );
 
@@ -1548,7 +1779,6 @@ app.post(
                     "Non autorisé."
 
             });
-
         }
 
 
@@ -1559,27 +1789,21 @@ app.post(
         const nomSite =
             typeof req.body.nomSite ===
             "string"
-
                 ? req.body.nomSite.trim()
-
                 : anciens.nomSite;
 
 
         const titreAccueil =
             typeof req.body.titreAccueil ===
             "string"
-
                 ? req.body.titreAccueil.trim()
-
                 : anciens.titreAccueil;
 
 
         const texteAccueil =
             typeof req.body.texteAccueil ===
             "string"
-
                 ? req.body.texteAccueil.trim()
-
                 : anciens.texteAccueil;
 
 
@@ -1609,7 +1833,6 @@ app.post(
                     "Le nom du site est obligatoire."
 
             });
-
         }
 
 
@@ -1628,7 +1851,6 @@ app.post(
                     "Prix point relais invalide."
 
             });
-
         }
 
 
@@ -1647,7 +1869,6 @@ app.post(
                     "Prix domicile invalide."
 
             });
-
         }
 
 
@@ -1679,14 +1900,12 @@ app.post(
             reglages
 
         });
-
     }
 );
 
 
 // ============================================================
 // RÉGLAGES PUBLICS
-// IMPORTANT
 // ============================================================
 
 app.get(
@@ -1709,7 +1928,6 @@ app.get(
                 reglages.texteAccueil
 
         });
-
     }
 );
 
@@ -1735,7 +1953,6 @@ app.get(
                     "Non autorisé."
 
             });
-
         }
 
 
@@ -1757,7 +1974,6 @@ app.get(
             commandes
 
         });
-
     }
 );
 
@@ -1779,7 +1995,6 @@ app.patch(
                     "Non autorisé."
 
             });
-
         }
 
 
@@ -1810,7 +2025,6 @@ app.patch(
                     "Commande introuvable."
 
             });
-
         }
 
 
@@ -1844,13 +2058,11 @@ app.patch(
                         "Statut invalide."
 
                 });
-
             }
 
 
             commande.statut =
                 req.body.statut;
-
         }
 
 
@@ -1863,7 +2075,6 @@ app.patch(
                 Boolean(
                     req.body.archivee
                 );
-
         }
 
 
@@ -1884,7 +2095,6 @@ app.patch(
             commande
 
         });
-
     }
 );
 
@@ -1906,7 +2116,6 @@ app.delete(
                     "Non autorisé."
 
             });
-
         }
 
 
@@ -1939,7 +2148,6 @@ app.delete(
                     "Commande introuvable."
 
             });
-
         }
 
 
@@ -1955,16 +2163,17 @@ app.delete(
 
 
         res.json({
+
             ok:
                 true
-        });
 
+        });
     }
 );
 
 
 // ============================================================
-// POINTS DE RETRAIT
+// POINTS DE RETRAIT LA POSTE
 // ============================================================
 
 app.get(
@@ -1990,7 +2199,6 @@ app.get(
                         "Veuillez saisir une recherche."
 
                 });
-
             }
 
 
@@ -2034,7 +2242,6 @@ app.get(
                 throw new Error(
                     `La Poste HTTP ${reponse.status}`
                 );
-
             }
 
 
@@ -2115,7 +2322,6 @@ app.get(
                             ) {
 
                                 return null;
-
                             }
 
 
@@ -2187,9 +2393,7 @@ app.get(
                     "Impossible de rechercher les points de retrait."
 
             });
-
         }
-
     }
 );
 
@@ -2227,7 +2431,6 @@ app.post(
                         "Le panier est vide."
 
                 });
-
             }
 
 
@@ -2249,7 +2452,6 @@ app.post(
                         "Mode de livraison invalide."
 
                 });
-
             }
 
 
@@ -2272,14 +2474,16 @@ app.post(
                             "Aucun point de retrait sélectionné."
 
                     });
-
                 }
-
             }
 
 
+            // ------------------------------------------------
+            // PRODUITS SUPABASE
+            // ------------------------------------------------
+
             const produits =
-                lireProduits();
+                await lireProduits();
 
 
             const quantites = {};
@@ -2317,7 +2521,6 @@ app.post(
                             "Quantité invalide."
 
                     });
-
                 }
 
 
@@ -2327,7 +2530,6 @@ app.post(
                         0
                     ) +
                     quantite;
-
             }
 
 
@@ -2344,7 +2546,8 @@ app.post(
                 const produit =
                     produits.find(
                         p =>
-                            p.id === id
+                            String(p.id) ===
+                            String(id)
                     );
 
 
@@ -2358,7 +2561,6 @@ app.post(
                             "Un produit n'existe plus."
 
                     });
-
                 }
 
 
@@ -2377,7 +2579,6 @@ app.post(
                             `${produit.nom} n'est plus disponible en quantité suffisante.`
 
                     });
-
                 }
 
 
@@ -2385,6 +2586,24 @@ app.post(
                     Number(
                         produit.prix
                     );
+
+
+                if (
+                    !Number.isFinite(
+                        prix
+                    ) ||
+                    prix < 0
+                ) {
+
+                    return res.status(
+                        400
+                    ).json({
+
+                        erreur:
+                            "Prix produit invalide."
+
+                    });
+                }
 
 
                 lineItems.push({
@@ -2412,7 +2631,6 @@ app.post(
                         quantite
 
                 });
-
             }
 
 
@@ -2513,13 +2731,14 @@ app.post(
 
                 ],
 
-                success_url:"https://plika.onrender.com/succes.html",
+                success_url:
+                    "https://plika.onrender.com/succes.html",
 
-                cancel_url:"https://plika.onrender.com/index.html?paiement=annule",
-				
+                cancel_url:
+                    "https://plika.onrender.com/index.html?paiement=annule",
+
                 billing_address_collection:
                     "auto"
-
             };
 
 
@@ -2534,7 +2753,6 @@ app.post(
                         ["FR"]
 
                 };
-
             }
 
 
@@ -2571,9 +2789,7 @@ app.post(
                     "Impossible de créer le paiement."
 
             });
-
         }
-
     }
 );
 

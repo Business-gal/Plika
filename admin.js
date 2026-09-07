@@ -163,11 +163,11 @@ function creerProduitHTML(produit, index) {
                         min="0"
                         step="1"
                         value="${Number(produit.stock || 0)}"
-                        onchange="modifierProduit(
-                            ${index},
-                            'stock',
-                            this.value
-                        )"
+                        oninput="modifierProduit(
+						${index},
+						'stock',
+						this.value
+					)"
                     >
                 </div>
 
