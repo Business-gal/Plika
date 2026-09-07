@@ -219,7 +219,7 @@ async function lireProduits() {
         data,
         error
     } = await supabase
-        .from("produits")
+        .from("Produits")
         .select("id, nom, prix, stock, images");
 
     if (error) {
@@ -371,7 +371,7 @@ async function sauvegarderProduits(
         const {
             error
         } = await supabase
-            .from("produits")
+            .from("Produits")
             .upsert(
                 produitsNettoyes,
                 {
@@ -400,7 +400,7 @@ async function sauvegarderProduits(
         data: produitsExistants,
         error: erreurLecture
     } = await supabase
-        .from("produits")
+        .from("Produits")
         .select("id");
 
     if (erreurLecture) {
@@ -442,7 +442,7 @@ async function sauvegarderProduits(
         const {
             error
         } = await supabase
-            .from("produits")
+            .from("Produits")
             .delete()
             .eq(
                 "id",
