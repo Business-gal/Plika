@@ -308,178 +308,62 @@ async function lireProduits() {
 // SAUVEGARDER PRODUITS - SUPABASE
 // ============================================================
 
-async function sauvegarderProduits(
-    produits
-) {
+async function sauvegarderProduits(produits) {
 
-    if (
-        !Array.isArray(
-            produits
-        )
-    ) {
-
-        throw new Error(
-            "Produits invalides."
-        );
+    if (!Array.isArray(produits)) {
+        throw new Error("Produits invalides.");
     }
 
+    const produitsNettoyes = produits.map(produit => ({
+        id: String(produit.id),
+        nom: String(produit.nom || "Produit sans nom"),
+        prix: Number(produit.prix || 0),
+        stock: Number(produit.stock || 0),
+        images: Array.isArray(produit.images) ? produit.images : []
+    }));
 
-    const produitsNettoyes =
-        produits.map(
-            produit => ({
-
-                id:
-                    String(
-                        produit.id
-                    ),
-
-                nom:
-                    String(
-                        produit.nom ||
-                        "Produit sans nom"
-                    ),
-
-                prix:
-                    Number(
-                        produit.prix || 0
-                    ),
-
-                stock:
-                    Number(
-                        produit.stock || 0
-                    ),
-
-                images:
-                    Array.isArray(
-                        produit.images
-                    )
-                        ? produit.images
-                        : []
-
-            })
-        );
-
-
-    // --------------------------------------------------------
-    // ENVOI / MISE À JOUR
-    // --------------------------------------------------------
-
-    if (
-        produitsNettoyes.length > 0
-    ) {
-
-        const {
-            error
-        } = await supabase
+    // Sauvegarde / mise à jour des produits
+    if (produitsNettoyes.length > 0) {
+        const { error } = await supabase
             .from("Produits")
-            .upsert(
-                produitsNettoyes,
-                {
-                    onConflict:
-                        "id"
-                }
-            );
+            .upsert(produitsNettoyes, {
+                onConflict: "id"
+            });
 
         if (error) {
-
-            console.error(
-                "❌ Erreur sauvegarde Supabase :",
-                error
-            );
-
+            console.error("❌ Erreur sauvegarde Supabase :", error);
             throw error;
         }
     }
 
-
-    // --------------------------------------------------------
-    // SUPPRESSION DES PRODUITS SUPPRIMÉS DE L'ADMIN
-    // --------------------------------------------------------
-
-    const {
-        data: produitsExistants,
-        error: erreurLecture
-    } = await supabase
-        .from("Produits")
-        .select("id");
+    // Suppression des produits supprimés de l'admin
+    const { data: produitsExistants, error: erreurLecture } =
+        await supabase
+            .from("Produits")
+            .select("id");
 
     if (erreurLecture) {
-
         throw erreurLecture;
     }
 
+    const idsActuels = new Set(
+        produitsNettoyes.map(produit => String(produit.id))
+    );
 
-    const idsActuels =
-        produitsNettoyes.map(
-            produit =>
-                String(
-                    produit.id
-                )
-        );
+    const idsASupprimer = (produitsExistants || [])
+        .map(produit => String(produit.id))
+        .filter(id => !idsActuels.has(id));
 
-
-    const idsASupprimer =
-        (produitsExistants || [])
-            .map(
-                produit =>
-                    String(
-                        produit.id
-                    )
-            )
-            .filter(
-                id =>
-                    !idsActuels.includes(
-                        id
-                    )
-            );
-
-
-    for (
-        const id
-        of idsASupprimer
-    ) {
-
-        const {
-            error
-        } = await supabase
+    if (idsASupprimer.length > 0) {
+        const { error } = await supabase
             .from("Produits")
             .delete()
-            .eq(
-                "id",
-                id
-            );
+            .in("id", idsASupprimer);
 
         if (error) {
-
             throw error;
         }
     }
-
-
-    // --------------------------------------------------------
-    // COPIE LOCALE DE SECOURS
-    // --------------------------------------------------------
-
-    try {
-
-        fs.writeFileSync(
-            PRODUCTS_FILE,
-            JSON.stringify(
-                produitsNettoyes,
-                null,
-                4
-            ),
-            "utf8"
-        );
-
-    } catch (erreur) {
-
-        console.warn(
-            "⚠️ Impossible d'écrire products.json :",
-            erreur.message
-        );
-    }
-
 
     console.log(
         `✅ ${produitsNettoyes.length} produit(s) sauvegardé(s) dans Supabase.`
