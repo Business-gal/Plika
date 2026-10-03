@@ -195,17 +195,7 @@ async function chargerProduits() {
         }
 
 
-        produits =
-            donnees;
-
-
-        localStorage.setItem(
-            "produits",
-            JSON.stringify(
-                produits
-            )
-        );
-
+        produits = donnees;
 
         afficherBoutique();
 
