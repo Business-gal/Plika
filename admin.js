@@ -1,10 +1,6 @@
 let produits = [];
 
-
-// ============================================================
 // CHARGER PRODUITS
-// ============================================================
-
 async function chargerProduits() {
     try {
         const reponse = await fetch("/api/products", {
@@ -22,6 +18,7 @@ async function chargerProduits() {
         produits = produits.map(produit => ({
             id: produit.id || creerIdProduit(),
             nom: produit.nom || "Nouveau produit",
+            description: produit.description || "",
             prix: Number(produit.prix || 0),
             stock: Number(produit.stock || 0),
             images: Array.isArray(produit.images)
@@ -47,10 +44,7 @@ async function chargerProduits() {
 }
 
 
-// ============================================================
 // AFFICHER PRODUITS
-// ============================================================
-
 function afficherProduits() {
     const liste = document.getElementById("liste-produits");
 
@@ -73,10 +67,7 @@ function afficherProduits() {
 }
 
 
-// ============================================================
 // HTML PRODUIT
-// ============================================================
-
 function creerProduitHTML(produit, index) {
 
     const images = Array.isArray(produit.images)
@@ -84,11 +75,9 @@ function creerProduitHTML(produit, index) {
         : [];
 
     const photosHTML = images.length > 0
-
         ? images
             .map((image, photoIndex) => `
                 <div class="admin-photo">
-
                     <img
                         src="${image}"
                         alt="${echapperAdmin(produit.nom)}"
@@ -101,11 +90,9 @@ function creerProduitHTML(produit, index) {
                     >
                         ×
                     </button>
-
                 </div>
             `)
             .join("")
-
         : `
             <div class="info-admin">
                 Aucune photo.
@@ -123,8 +110,10 @@ function creerProduitHTML(produit, index) {
                 ${photosHTML}
             </div>
 
+
             <div class="produit-champs">
 
+                <!-- NOM -->
                 <div>
                     <label>Nom</label>
 
@@ -139,6 +128,8 @@ function creerProduitHTML(produit, index) {
                     >
                 </div>
 
+
+                <!-- PRIX -->
                 <div>
                     <label>Prix (€)</label>
 
@@ -155,6 +146,8 @@ function creerProduitHTML(produit, index) {
                     >
                 </div>
 
+
+                <!-- STOCK -->
                 <div>
                     <label>Stock</label>
 
@@ -164,14 +157,32 @@ function creerProduitHTML(produit, index) {
                         step="1"
                         value="${Number(produit.stock || 0)}"
                         oninput="modifierProduit(
-						${index},
-						'stock',
-						this.value
-					)"
+                            ${index},
+                            'stock',
+                            this.value
+                        )"
                     >
                 </div>
 
+
+                <!-- DESCRIPTION -->
+                <div style="grid-column: 1 / -1;">
+
+                    <label>Description</label>
+
+                    <textarea
+                        placeholder="Description du produit..."
+                        onchange="modifierProduit(
+                            ${index},
+                            'description',
+                            this.value
+                        )"
+                    >${echapperAdmin(produit.description)}</textarea>
+
+                </div>
+
             </div>
+
 
             <div class="produit-actions">
 
@@ -181,6 +192,7 @@ function creerProduitHTML(produit, index) {
                 >
                     📷 Ajouter des photos
                 </button>
+
 
                 <button
                     type="button"
@@ -197,42 +209,57 @@ function creerProduitHTML(produit, index) {
 }
 
 
-// ============================================================
 // MODIFIER PRODUIT
-// ============================================================
-
 function modifierProduit(index, champ, valeur) {
 
     if (!produits[index]) {
         return;
     }
 
+
+    // NOM
     if (champ === "nom") {
+
         produits[index].nom =
             String(valeur).trim() || "Produit sans nom";
     }
 
+
+    // DESCRIPTION
+    if (champ === "description") {
+
+        produits[index].description =
+            String(valeur);
+    }
+
+
+    // PRIX
     if (champ === "prix") {
+
         produits[index].prix =
             Number(valeur) || 0;
     }
 
-    if (champ === "stock") {
-        produits[index].stock =
-            Number(valeur);
 
-        console.log(
-            "Stock modifié :",
-            produits[index].stock
-        );
-    }
+    // STOCK
+    if (champ === "stock") {
+    produits[index].stock =
+        Number(valeur);
+
+    console.log(
+        "Stock modifié :",
+        produits[index].stock
+    );
+}
+
+	if (champ === "description") {
+    produits[index].description =
+        String(valeur);
+}
 }
 
 
-// ============================================================
 // AJOUTER PHOTOS
-// ============================================================
-
 function ajouterPhotos(index) {
 
     if (!produits[index]) {
@@ -248,14 +275,17 @@ function ajouterPhotos(index) {
 
     document.body.appendChild(input);
 
+
     input.onchange = async () => {
 
         const fichiers =
             Array.from(input.files || []);
 
+
         if (!Array.isArray(produits[index].images)) {
             produits[index].images = [];
         }
+
 
         for (const fichier of fichiers) {
 
@@ -269,52 +299,48 @@ function ajouterPhotos(index) {
             } catch (erreur) {
 
                 console.error(erreur);
-
             }
         }
+
 
         input.remove();
 
         afficherProduits();
     };
 
+
     input.click();
 }
 
 
-// ============================================================
 // LIRE IMAGE
-// ============================================================
-
 function lireFichier(fichier) {
 
     return new Promise((resolve, reject) => {
 
         const lecteur = new FileReader();
 
+
         lecteur.onload = () => {
             resolve(lecteur.result);
         };
 
+
         lecteur.onerror = () => {
+
             reject(
                 new Error("Impossible de lire l'image.")
             );
         };
+
 
         lecteur.readAsDataURL(fichier);
     });
 }
 
 
-// ============================================================
 // SUPPRIMER PHOTO
-// ============================================================
-
-function supprimerPhoto(
-    produitIndex,
-    photoIndex
-) {
+function supprimerPhoto(produitIndex, photoIndex) {
 
     if (
         !produits[produitIndex] ||
@@ -323,36 +349,32 @@ function supprimerPhoto(
         return;
     }
 
+
     produits[produitIndex].images.splice(
         photoIndex,
         1
     );
 
+
     afficherProduits();
 }
 
 
-// ============================================================
 // AJOUTER PRODUIT
-// ============================================================
-
 function ajouterProduit() {
 
-    produits.push({
+   produits.push({
+    id: creerIdProduit(),
+    nom: "Nouveau produit",
+    description: "",
+    prix: 0,
+    stock: 0,
+    images: []
+});
 
-        id: creerIdProduit(),
-
-        nom: "Nouveau produit",
-
-        prix: 0,
-
-        stock: 0,
-
-        images: []
-
-    });
 
     afficherProduits();
+
 
     window.scrollTo({
         top: document.body.scrollHeight,
@@ -361,15 +383,13 @@ function ajouterProduit() {
 }
 
 
-// ============================================================
 // SUPPRIMER PRODUIT
-// ============================================================
-
 function supprimerProduit(index) {
 
     if (!produits[index]) {
         return;
     }
+
 
     if (
         !confirm(
@@ -379,22 +399,20 @@ function supprimerProduit(index) {
         return;
     }
 
+
     produits.splice(index, 1);
 
     afficherProduits();
 }
 
 
-// ============================================================
 // SAUVEGARDER PRODUITS
-// ============================================================
-
 async function sauvegarderProduits() {
 
-    // Message immédiat
     afficherMessageAdmin(
         "⏳ Enregistrement en cours..."
     );
+
 
     try {
 
@@ -402,6 +420,7 @@ async function sauvegarderProduits() {
             "💾 Sauvegarde des produits...",
             produits
         );
+
 
         const reponse = await fetch(
             "/api/admin/sync-products",
@@ -420,8 +439,10 @@ async function sauvegarderProduits() {
             }
         );
 
+
         const resultat =
             await reponse.json();
+
 
         if (!reponse.ok) {
 
@@ -431,13 +452,16 @@ async function sauvegarderProduits() {
             );
         }
 
+
         console.log(
             "✅ Produits sauvegardés."
         );
 
+
         afficherMessageAdmin(
             "✅ Produits enregistrés."
         );
+
 
     } catch (erreur) {
 
@@ -445,6 +469,7 @@ async function sauvegarderProduits() {
             "❌ Erreur sauvegarde produits :",
             erreur
         );
+
 
         afficherMessageAdmin(
             "❌ " + erreur.message,
@@ -454,10 +479,7 @@ async function sauvegarderProduits() {
 }
 
 
-// ============================================================
 // CHARGER ADMINISTRATION DU SITE
-// ============================================================
-
 async function chargerPersonnalisation() {
 
     try {
@@ -470,8 +492,10 @@ async function chargerPersonnalisation() {
             }
         );
 
+
         const resultat =
             await reponse.json();
+
 
         if (!reponse.ok) {
 
@@ -481,32 +505,42 @@ async function chargerPersonnalisation() {
             );
         }
 
+
         const nom =
             document.getElementById("nom-site");
+
 
         const titre =
             document.getElementById("titre-accueil");
 
+
         const texte =
             document.getElementById("texte-accueil");
 
+
         if (nom) {
+
             nom.value =
                 resultat.nomSite ||
                 "Origami Bijoux";
         }
 
+
         if (titre) {
+
             titre.value =
                 resultat.titreAccueil ||
                 "";
         }
 
+
         if (texte) {
+
             texte.value =
                 resultat.texteAccueil ||
                 "";
         }
+
 
     } catch (erreur) {
 
@@ -514,6 +548,7 @@ async function chargerPersonnalisation() {
             "❌ Chargement personnalisation :",
             erreur
         );
+
 
         afficherMessageAdmin(
             "❌ Impossible de charger les réglages.",
@@ -523,23 +558,23 @@ async function chargerPersonnalisation() {
 }
 
 
-// ============================================================
 // SAUVEGARDER ADMINISTRATION DU SITE
-// ============================================================
-
 async function sauvegarderPersonnalisation() {
 
     const nom =
         document.getElementById("nom-site")?.value.trim() ||
         "Origami Bijoux";
 
+
     const titre =
         document.getElementById("titre-accueil")?.value.trim() ||
         "";
 
+
     const texte =
         document.getElementById("texte-accueil")?.value.trim() ||
         "";
+
 
     try {
 
@@ -551,10 +586,12 @@ async function sauvegarderPersonnalisation() {
             }
         );
 
+
         const anciens =
             lecture.ok
                 ? await lecture.json()
                 : {};
+
 
         const reponse = await fetch(
             "/api/admin/settings",
@@ -564,7 +601,8 @@ async function sauvegarderPersonnalisation() {
                 credentials: "same-origin",
 
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type":
+                        "application/json"
                 },
 
                 body: JSON.stringify({
@@ -588,8 +626,10 @@ async function sauvegarderPersonnalisation() {
             }
         );
 
+
         const resultat =
             await reponse.json();
+
 
         if (!reponse.ok) {
 
@@ -599,9 +639,11 @@ async function sauvegarderPersonnalisation() {
             );
         }
 
+
         afficherMessageAdmin(
             "✅ Administration du site enregistrée."
         );
+
 
     } catch (erreur) {
 
@@ -609,6 +651,7 @@ async function sauvegarderPersonnalisation() {
             "❌ Sauvegarde réglages :",
             erreur
         );
+
 
         afficherMessageAdmin(
             "❌ " + erreur.message,
@@ -618,10 +661,7 @@ async function sauvegarderPersonnalisation() {
 }
 
 
-// ============================================================
 // CHARGER LIVRAISON
-// ============================================================
-
 async function chargerReglagesLivraison() {
 
     try {
@@ -634,22 +674,27 @@ async function chargerReglagesLivraison() {
             }
         );
 
+
         if (!reponse.ok) {
             return;
         }
 
+
         const reglages =
             await reponse.json();
+
 
         const relais =
             document.getElementById(
                 "prix-point-relais"
             );
 
+
         const domicile =
             document.getElementById(
                 "prix-domicile"
             );
+
 
         if (relais) {
 
@@ -659,6 +704,7 @@ async function chargerReglagesLivraison() {
                 );
         }
 
+
         if (domicile) {
 
             domicile.value =
@@ -667,6 +713,7 @@ async function chargerReglagesLivraison() {
                 );
         }
 
+
     } catch (erreur) {
 
         console.error(erreur);
@@ -674,10 +721,7 @@ async function chargerReglagesLivraison() {
 }
 
 
-// ============================================================
 // SAUVEGARDER LIVRAISON
-// ============================================================
-
 async function sauvegarderLivraison() {
 
     try {
@@ -690,10 +734,12 @@ async function sauvegarderLivraison() {
             }
         );
 
+
         const anciens =
             lecture.ok
                 ? await lecture.json()
                 : {};
+
 
         const relais =
             Number(
@@ -702,12 +748,14 @@ async function sauvegarderLivraison() {
                 )?.value || 0
             );
 
+
         const domicile =
             Number(
                 document.getElementById(
                     "prix-domicile"
                 )?.value || 0
             );
+
 
         const reponse = await fetch(
             "/api/admin/settings",
@@ -717,7 +765,8 @@ async function sauvegarderLivraison() {
                 credentials: "same-origin",
 
                 headers: {
-                    "Content-Type": "application/json"
+                    "Content-Type":
+                        "application/json"
                 },
 
                 body: JSON.stringify({
@@ -743,8 +792,10 @@ async function sauvegarderLivraison() {
             }
         );
 
+
         const resultat =
             await reponse.json();
+
 
         if (!reponse.ok) {
 
@@ -754,9 +805,11 @@ async function sauvegarderLivraison() {
             );
         }
 
+
         afficherMessageAdmin(
             "✅ Tarifs de livraison enregistrés."
         );
+
 
     } catch (erreur) {
 
@@ -768,10 +821,7 @@ async function sauvegarderLivraison() {
 }
 
 
-// ============================================================
 // MESSAGE ADMIN
-// ============================================================
-
 function afficherMessageAdmin(
     message,
     erreur = false
@@ -782,6 +832,7 @@ function afficherMessageAdmin(
             "message-admin"
         );
 
+
     if (!element) {
 
         element =
@@ -789,59 +840,75 @@ function afficherMessageAdmin(
                 "div"
             );
 
+
         element.id =
             "message-admin";
+
 
         element.style.position =
             "fixed";
 
+
         element.style.right =
             "20px";
+
 
         element.style.bottom =
             "20px";
 
+
         element.style.zIndex =
             "9999";
+
 
         element.style.padding =
             "14px 18px";
 
+
         element.style.borderRadius =
             "12px";
 
+
         element.style.fontWeight =
             "600";
+
 
         document.body.appendChild(
             element
         );
     }
 
+
     element.textContent =
         message;
+
 
     element.style.background =
         erreur
             ? "#fff1f1"
             : "#f1f8f1";
 
+
     element.style.color =
         erreur
             ? "#9c1c1c"
             : "#245b24";
+
 
     element.style.border =
         erreur
             ? "1px solid #f0c8c8"
             : "1px solid #cde2cd";
 
+
     element.style.display =
         "block";
+
 
     clearTimeout(
         element._timer
     );
+
 
     element._timer =
         setTimeout(
@@ -856,10 +923,7 @@ function afficherMessageAdmin(
 }
 
 
-// ============================================================
 // OUTILS
-// ============================================================
-
 function creerIdProduit() {
 
     return (
@@ -878,10 +942,15 @@ function echapperAdmin(texte) {
     return String(
         texte ?? ""
     )
+
         .replace(/&/g, "&amp;")
+
         .replace(/</g, "&lt;")
+
         .replace(/>/g, "&gt;")
+
         .replace(/"/g, "&quot;")
+
         .replace(/'/g, "&#039;");
 }
 
@@ -891,17 +960,18 @@ function attributHTML(texte) {
     return String(
         texte ?? ""
     )
+
         .replace(/&/g, "&amp;")
+
         .replace(/"/g, "&quot;")
+
         .replace(/</g, "&lt;")
+
         .replace(/>/g, "&gt;");
 }
 
 
-// ============================================================
 // DÉMARRAGE
-// ============================================================
-
 document.addEventListener(
     "DOMContentLoaded",
     async () => {
@@ -911,15 +981,11 @@ document.addEventListener(
         await chargerPersonnalisation();
 
         await chargerReglagesLivraison();
-
     }
 );
 
 
-// ============================================================
 // BOUTON ENREGISTRER LES PRODUITS
-// ============================================================
-
 document.addEventListener(
     "click",
     event => {
@@ -929,13 +995,16 @@ document.addEventListener(
                 "#bouton-enregistrer-produits"
             );
 
+
         if (!bouton) {
             return;
         }
 
+
         console.log(
             "🖱️ Clic sur Enregistrer les produits"
         );
+
 
         sauvegarderProduits();
     }

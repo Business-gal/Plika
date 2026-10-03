@@ -220,7 +220,9 @@ async function lireProduits() {
         error
     } = await supabase
         .from("Produits")
-        .select("id, nom, prix, stock, images");
+        .select(
+            "id, nom, description, prix, stock, images"
+        );
 
     if (error) {
 
@@ -244,6 +246,11 @@ async function lireProduits() {
                 nom:
                     produit.nom ||
                     "Nouveau produit",
+
+                description:
+                    typeof produit.description === "string"
+                        ? produit.description
+                        : "",
 
                 prix:
                     Number(
@@ -315,55 +322,135 @@ async function sauvegarderProduits(produits) {
     }
 
     const produitsNettoyes = produits.map(produit => ({
-        id: String(produit.id),
-        nom: String(produit.nom || "Produit sans nom"),
-        prix: Number(produit.prix || 0),
-        stock: Number(produit.stock || 0),
-        images: Array.isArray(produit.images) ? produit.images : []
+
+        id:
+            String(
+                produit.id
+            ),
+
+        nom:
+            String(
+                produit.nom ||
+                "Produit sans nom"
+            ),
+
+        description:
+            typeof produit.description === "string"
+                ? produit.description
+                : "",
+
+        prix:
+            Number(
+                produit.prix || 0
+            ),
+
+        stock:
+            Number(
+                produit.stock || 0
+            ),
+
+        images:
+            Array.isArray(
+                produit.images
+            )
+                ? produit.images
+                : []
+
     }));
 
+
     // Sauvegarde / mise à jour des produits
-    if (produitsNettoyes.length > 0) {
-        const { error } = await supabase
+    if (
+        produitsNettoyes.length > 0
+    ) {
+
+        const {
+            error
+        } = await supabase
             .from("Produits")
-            .upsert(produitsNettoyes, {
-                onConflict: "id"
-            });
+            .upsert(
+                produitsNettoyes,
+                {
+                    onConflict:
+                        "id"
+                }
+            );
 
         if (error) {
-            console.error("❌ Erreur sauvegarde Supabase :", error);
+
+            console.error(
+                "❌ Erreur sauvegarde Supabase :",
+                error
+            );
+
             throw error;
         }
     }
 
+
     // Suppression des produits supprimés de l'admin
-    const { data: produitsExistants, error: erreurLecture } =
+    const {
+        data: produitsExistants,
+        error: erreurLecture
+    } =
         await supabase
             .from("Produits")
             .select("id");
+
 
     if (erreurLecture) {
         throw erreurLecture;
     }
 
-    const idsActuels = new Set(
-        produitsNettoyes.map(produit => String(produit.id))
-    );
 
-    const idsASupprimer = (produitsExistants || [])
-        .map(produit => String(produit.id))
-        .filter(id => !idsActuels.has(id));
+    const idsActuels =
+        new Set(
+            produitsNettoyes.map(
+                produit =>
+                    String(
+                        produit.id
+                    )
+            )
+        );
 
-    if (idsASupprimer.length > 0) {
-        const { error } = await supabase
+
+    const idsASupprimer =
+        (
+            produitsExistants || []
+        )
+            .map(
+                produit =>
+                    String(
+                        produit.id
+                    )
+            )
+            .filter(
+                id =>
+                    !idsActuels.has(
+                        id
+                    )
+            );
+
+
+    if (
+        idsASupprimer.length > 0
+    ) {
+
+        const {
+            error
+        } = await supabase
             .from("Produits")
             .delete()
-            .in("id", idsASupprimer);
+            .in(
+                "id",
+                idsASupprimer
+            );
 
         if (error) {
             throw error;
         }
     }
+
 
     console.log(
         `✅ ${produitsNettoyes.length} produit(s) sauvegardé(s) dans Supabase.`
