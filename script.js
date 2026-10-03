@@ -433,13 +433,7 @@ function afficherBoutique() {
                         </h3>
 
 
-                        <p>
-
-                            ${echapperHTML(
-                                produit.description || ""
-                            )}
-
-                        </p>
+                      
 
 
                         <strong>
