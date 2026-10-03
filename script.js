@@ -660,7 +660,7 @@ function afficherProduitDetail() {
 
 
             <p
-                class="description-produit"
+                class="description-produit" style="white-space: pre-line;"
             >
 
                 ${echapperHTML(
